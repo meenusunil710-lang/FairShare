@@ -98,12 +98,18 @@ def project_modules(project_id):
     project = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
     
     # Fetch modules with member names and priorities
+   # Change the modules query to this:
     modules = conn.execute("""
-        SELECT m.*, mem.name as member_name 
-        FROM modules m 
-        LEFT JOIN members mem ON m.assigned_member_id = mem.id 
-        WHERE m.project_id = ?
-    """, (project_id,)).fetchall()
+    SELECT m.*, mem.name as member_name 
+    FROM modules m 
+    LEFT JOIN members mem ON m.assigned_member_id = mem.id 
+    WHERE m.project_id = ?
+    ORDER BY CASE m.priority 
+        WHEN 'High' THEN 1 
+        WHEN 'Medium' THEN 2 
+        ELSE 3 
+    END, m.completed ASC
+""", (project_id,)).fetchall()
     
     members = conn.execute("SELECT * FROM members WHERE project_id = ?", (project_id,)).fetchall()
     

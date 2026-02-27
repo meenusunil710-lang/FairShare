@@ -32,7 +32,23 @@
             </div>
             <a href="/create" class="btn-action">+ Create Project</a>
         </header>
+<div style="margin-bottom: 30px;">
+    <input type="text" id="projectSearch" placeholder="🔍 Search projects..." 
+           style="width: 100%; max-width: 400px; padding: 12px 20px; border-radius: 12px; border: 2px solid #e2e8f0;"
+           onkeyup="searchProjects()">
+</div>
 
+<script>
+function searchProjects() {
+    let input = document.getElementById('projectSearch').value.toLowerCase();
+    let cards = document.getElementsByClassName('card');
+    
+    for (let i = 0; i < cards.length; i++) {
+        let title = cards[i].getElementsByTagName('h2')[0].innerText.toLowerCase();
+        cards[i].style.display = title.includes(input) ? "" : "none";
+    }
+}
+</script>
         <div class="grid">
             {% for project in projects %}
             <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
