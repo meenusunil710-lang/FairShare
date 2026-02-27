@@ -2,24 +2,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Create Project 🎨</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FairShare | Create New Project</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Create a New Project</h1>
-    <p>Because starting something is 90% of the fun 😎</p>
 
-    <form method="POST">
-        <label>Project Name:</label><br>
-        <input type="text" name="project_name" placeholder="Super Secret Idea" required><br>
-        
-        <label>Deadline:</label><br>
-        <input type="date" name="deadline" required><br>
-        
-        <button type="submit">Let's Go! 🚀</button>
-    </form>
+    <nav class="sidebar">
+        <div class="logo">FairShare.</div>
+        <a href="/" class="btn-nav"><span>📊</span> Dashboard</a>
+        <a href="/create" class="btn-nav active"><span>✨</span> New Project</a>
+    </nav>
 
-    <br>
-    <a href="/">Back to Home</a>
+    <main class="content" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        
+        <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="font-size: 2.5rem; font-weight: 800; margin: 0;">Ignite a New Idea 🚀</h1>
+            <p style="color: #64748b;">Fill in the details below to set your project in motion.</p>
+        </div>
+
+        <div class="card" style="width: 100%; max-width: 500px; padding: 40px;">
+            <form method="POST">
+                <div style="margin-bottom: 25px;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 10px; color: #4f46e5; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+                        Project Name
+                    </label>
+                    <input type="text" name="project_name" placeholder="e.g. Website Redesign 2026" required>
+                </div>
+
+                <div style="margin-bottom: 35px;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 10px; color: #4f46e5; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
+                        Target Deadline
+                    </label>
+                    <input type="date" name="deadline" required>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <button type="submit" class="btn-action" style="width: 100%; font-size: 1.1rem; padding: 16px;">
+                        Create Workspace →
+                    </button>
+                    
+                    <a href="/" class="btn-outline" style="text-align: center; text-decoration: none; padding: 12px;">
+                        Cancel and Go Back
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div style="margin-top: 30px; background: rgba(99, 102, 241, 0.1); padding: 15px 25px; border-radius: 20px; color: #4f46e5; font-size: 0.85rem; font-weight: 600;">
+            💡 Pro-tip: Clear names help your team stay focused!
+        </div>
+
+    </main>
+
 </body>
 </html>
