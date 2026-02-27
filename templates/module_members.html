@@ -1,42 +1,96 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Task Details</title>
+    <title>Task Details | {{ module.name }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <nav class="sidebar">
         <div class="logo">FairShare.</div>
         <a href="/project/{{ module.project_id }}" class="btn-nav">📂 Project Workspace</a>
+        <a href="/" class="btn-nav">📊 Dashboard</a>
     </nav>
+
     <main class="content">
-        <div class="header">
-            <h1 style="font-size: 2.2rem;">Task: {{ module.name }}</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+            <div>
+                <h1 style="font-size: 2.5rem; margin: 0;">{{ module.name }}</h1>
+                <p style="color: #64748b; font-weight: 600; margin-top: 5px;">
+                    Lead: <span style="color: #4f46e5;">{{ member.name }}</span> | 
+                    Priority: <span style="text-transform: uppercase; font-weight: 800;">{{ module.priority }}</span>
+                </p>
+            </div>
+            
             {% if not module.completed %}
             <form action="/module/{{ module.id }}/complete" method="POST">
-                <button type="submit" class="btn-action" style="background: #10b981;">Mark Finished ✅</button>
+                <button type="submit" class="btn-action" style="background: #10b981; padding: 15px 30px; font-size: 1rem;">
+                    Mark Finished ✅
+                </button>
             </form>
+            {% else %}
+            <span style="background: #dcfce7; color: #15803d; padding: 10px 20px; border-radius: 12px; font-weight: 800;">🏆 TASK COMPLETED</span>
             {% endif %}
         </div>
 
-        <div class="grid">
-            <div class="card" style="background: white;">
-                <h3 style="margin-bottom: 20px;">Daily Progress Log</h3>
+        <div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 30px;">
+            
+            <div class="card" style="background: white; border: 2px solid #e2e8f0;">
+                <h3 style="margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">🕒 Activity Timeline</h3>
+                
                 {% for update in updates %}
-                <div style="background: #f8fafc; padding: 15px; border-radius: 15px; margin-bottom: 10px;">
-                    <small style="color: #4f46e5; font-weight: 800;">{{ update.update_date }}</small>
-                    <p style="margin: 5px 0 0 0;">{{ update.update_text }}</p>
+                <div style="border-left: 3px solid #4f46e5; padding-left: 20px; margin-bottom: 20px; position: relative;">
+                    <div style="width: 12px; height: 12px; background: #4f46e5; border-radius: 50%; position: absolute; left: -8px; top: 5px;"></div>
+                    <small style="color: #64748b; font-weight: 800; display: block;">{{ update.update_date }}</small>
+                    <p style="margin: 5px 0 0 0; color: #1e293b; font-weight: 500;">{{ update.update_text }}</p>
                 </div>
+                {% else %}
+                <p style="color: #94a3b8; font-style: italic; text-align: center; padding: 20px;">No updates yet. Time to get to work!</p>
                 {% endfor %}
             </div>
 
-            <div class="card">
-                <h3>Post New Update</h3>
-                <form action="/module/{{ module.id }}/add_update" method="POST">
-                    <input type="date" name="update_date" required>
-                    <textarea name="update_text" placeholder="What was done today?" required style="height: 100px;"></textarea>
-                    <button type="submit" class="btn-action" style="width: 100%;">Add to Log</button>
-                </form>
+            <div style="display: flex; flex-direction: column; gap: 30px;">
+                
+                <div class="card" style="background: white; border: 2px solid #e2e8f0;">
+                    <h3 style="margin-top: 0;">Post New Update</h3>
+                    <form action="/module/{{ module.id }}/add_update" method="POST">
+                        <label style="font-size: 0.75rem; font-weight: 800; color: #64748b;">DATE</label>
+                        <input type="date" name="update_date" required>
+                        
+                        <label style="font-size: 0.75rem; font-weight: 800; color: #64748b; margin-top: 15px; display: block;">NOTES</label>
+                        <textarea name="update_text" placeholder="What was achieved today?" required style="height: 100px; resize: none;"></textarea>
+                        
+                        <button type="submit" class="btn-action" style="width: 100%; margin-top: 15px;">Add to Log</button>
+                    </form>
+                </div>
+
+                <div class="card" style="background: #f8fafc; border: 2px solid #cbd5e1;">
+                    <h3 style="margin-top: 0;">✏️ Edit Task Info</h3>
+                    <form action="/module/{{ module.id }}/edit" method="POST">
+                        <label style="font-size: 0.75rem; font-weight: 800; color: #64748b;">RENAME</label>
+                        <input type="text" name="module_name" value="{{ module.name }}" required>
+
+                        <label style="font-size: 0.75rem; font-weight: 800; color: #64748b; margin-top: 15px; display: block;">REASSIGN</label>
+                        <select name="assigned_member" required>
+                            {% for m_option in all_members %}
+                                <option value="{{ m_option.id }}" {% if m_option.id == module.assigned_member_id %}selected{% endif %}>
+                                    {{ m_option.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <label style="font-size: 0.75rem; font-weight: 800; color: #64748b; margin-top: 15px; display: block;">PRIORITY</label>
+                        <select name="priority" required>
+                            <option value="Low" {% if module.priority == 'Low' %}selected{% endif %}>Low 🟢</option>
+                            <option value="Medium" {% if module.priority == 'Medium' %}selected{% endif %}>Medium 🟡</option>
+                            <option value="High" {% if module.priority == 'High' %}selected{% endif %}>High 🔴</option>
+                        </select>
+
+                        <button type="submit" class="btn-action" style="width: 100%; margin-top: 20px; background: #1e293b;">
+                            Save Changes
+                        </button>
+                    </form>
+                </div>
+
             </div>
         </div>
     </main>
