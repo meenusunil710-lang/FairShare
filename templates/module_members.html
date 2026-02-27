@@ -2,39 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ module['name'] }} - Updates</title>
+    <title>{{ module.name }} - Updates 👥</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Module: {{ module['name'] }}</h1>
-    <h2>Assigned Member</h2>
-    <p>{{ member['name'] }}</p>
+    <h1>Module: {{ module.name }}</h1>
+    <p>Lead by: <strong>{{ member.name if member else 'Nobody yet' }}</strong></p>
 
-    <h3>Updates</h3>
+    <h2>Log Book 📝</h2>
     <ul>
-        {% for u in updates %}
-            <li>{{ u['update_date'] }} - {{ u['update_text'] }}</li>
+        {% for update in updates %}
+            <li>
+                <strong>{{ update.update_date }}</strong>: {{ update.update_text }}
+            </li>
         {% else %}
-            <li>No updates yet.</li>
+            <li style="justify-content: center;">No updates yet. Write history!</li>
         {% endfor %}
     </ul>
 
-    <h3>Add Update</h3>
-    <form method="POST" action="/module/{{ module['id'] }}/add_update">
-        <label>Date:</label>
-        <input type="date" name="update_date" required>
-        <label>Update:</label>
-        <input type="text" name="update_text" required>
-        <button type="submit">Add Update</button>
-    </form>
-
-    {% if not module['completed'] %}
-        <form method="POST" action="/module/{{ module['id'] }}/complete">
-            <button type="submit">Mark Module Complete</button>
+    <div style="background: white; padding: 20px; border-radius: 15px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+        <h3>Post an Update</h3>
+        <form method="POST" action="/module/{{ module.id }}/add_update">
+            <input type="date" name="update_date" required><br>
+            <textarea name="update_text" placeholder="What did you achieve?" required style="width: 280px; height: 80px;"></textarea><br>
+            <button type="submit">Post Update ✍️</button>
         </form>
-    {% else %}
-        <p><strong>Module Completed ✅</strong></p>
-    {% endif %}
 
-    <a href="/project/{{ module['project_id'] }}">Back to Project</a>
+        {% if not module.completed %}
+        <form method="POST" action="/module/{{ module.id }}/complete">
+            <button type="submit" style="background: #22c55e; border-color: #16a34a; color: white;">Mark as Complete ✅</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <br><br>
+    <a href="/project/{{ module.project_id }}"><button>Back to Project</button></a>
 </body>
 </html>

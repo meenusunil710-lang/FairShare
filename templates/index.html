@@ -1,23 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>FairShare</title>
+    <meta charset="UTF-8">
+    <title>FairShare 🌈</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Welcome to FairShare</h1>
+    <h1>Welcome to FairShare 🌈</h1>
+    <a href="/create"><button>➕ Create New Project</button></a>
 
-    <a href="/create">Create New Project</a>
-
-    <h3>Projects:</h3>
-   <ul>
-    {% for project in projects %}
-        <li>
-            <a href="/project/{{ project[0] }}">
-                {{ project[1] }}
-            </a>
-        </li>
-    {% endfor %}
-</ul>
-
+    <h3>Your Current Projects:</h3>
+    <ul>
+        {% for project in projects %}
+            <li>
+                <div>
+                    <a href="/project/{{ project.id }}"><strong>{{ project.name }}</strong></a><br>
+                    <small>📅 Due: {{ project.deadline }}</small>
+                </div>
+                <form action="/project/{{ project.id }}/delete" method="POST" style="margin:0;">
+                    <button type="submit" class="btn-delete" onclick="return confirm('Delete this project?')">🗑 Delete</button>
+                </form>
+            </li>
+        {% else %}
+            <li style="justify-content: center;">No projects yet! Time to start something cool.</li>
+        {% endfor %}
+    </ul>
 </body>
 </html>

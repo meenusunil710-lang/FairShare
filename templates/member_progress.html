@@ -2,19 +2,42 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Log Progress</title>
+    <title>{{ module['name'] }} - Members 👥</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Log Progress</h1>
-    <form method="POST">
-        <label>Progress (%)</label>
-        <input type="number" name="progress" min="0" max="100" required><br>
+    <h1>Module: {{ module['name'] }}</h1>
+    <h2>Assigned Member</h2>
+    <ul>
+        <li>
+            <a href="#">{{ member['name'] if member else 'No one assigned 😅' }}</a>
+        </li>
+    </ul>
 
-        <label>Comment:</label>
-        <textarea name="comment" rows="4" cols="50"></textarea><br>
+    <h2>Updates</h2>
+    <ul>
+        {% for update in updates %}
+            <li>{{ update['update_date'] }} - {{ update['update_text'] }}</li>
+        {% else %}
+            <li>No updates yet. Be the first! 📝</li>
+        {% endfor %}
+    </ul>
 
-        <button type="submit" name="completed">Mark Completed</button>
+    <h3>Add Update</h3>
+    <form method="POST" action="/module/{{ module['id'] }}/add_update">
+        <label>Date:</label>
+        <input type="date" name="update_date" required>
+        <label>Update:</label>
+        <input type="text" name="update_text" placeholder="What did you do?" required>
+        <button type="submit">Add Update ✍️</button>
     </form>
-    <a href="/module/{{ module_id }}">Back to Module</a>
+
+    <h3>Mark Module Complete</h3>
+    <form method="POST" action="/module/{{ module['id'] }}/complete">
+        <button type="submit">Complete ✅</button>
+    </form>
+
+    <br>
+    <a href="/project/{{ module['project_id'] }}"><button>Back to Modules</button></a>
 </body>
 </html>

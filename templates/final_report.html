@@ -2,24 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ project.name }} - Final Report</title>
+    <title>Report - {{ project.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        @media print { .no-print { display: none; } body { background: white; } }
+        .report-card { text-align: left; background: white; padding: 20px; margin: 20px auto; border-radius: 10px; border-left: 5px solid #0077b6; }
+    </style>
 </head>
 <body>
-    <h1>Final Report: {{ project.name }}</h1>
+    <h1>🏆 Final Report: {{ project.name }}</h1>
+    <p><strong>Deadline:</strong> {{ project.deadline if project.deadline else 'Not set' }}</p>
 
-    {% for module in modules %}
-        <h3>Module: {{ module.name }} - Assigned to: {{ module.member_name if module.member_name else 'Unassigned' }}</h3>
-        <p>Status: {{ 'Completed ✅' if module.completed else 'Pending' }}</p>
+    <div style="max-width: 700px; margin: 0 auto;">
+        {% for module in modules %}
+            <div class="report-card">
+                <h3>{{ module.name }} ({{ '✅' if module.completed else '❌' }})</h3>
+                <p><strong>Owner:</strong> {{ module.member_name }}</p>
+                <ul>
+                    {% for update in updates[module.id] %}
+                        <li><em>{{ update.update_date }}</em> — {{ update.update_text }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
 
-        <ul>
-            {% for update in updates[module.id] %}
-                <li>{{ update.update_date }}: {{ update.update_text }}</li>
-            {% else %}
-                <li>No updates</li>
-            {% endfor %}
-        </ul>
-    {% endfor %}
-
-    <a href="/project/{{ project.id }}">Back to Project</a>
+    <div class="no-print">
+        <button onclick="window.print()">🖨️ Print Report</button>
+        <br>
+        <a href="/project/{{ project.id }}">Back to Project</a>
+    </div>
 </body>
 </html>

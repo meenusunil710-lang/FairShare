@@ -2,15 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Create Project</title>
+    <title>Create Project 🎨</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Create New Project</h1>
+    <h1>Create a New Project</h1>
+    <p>Because starting something is 90% of the fun 😎</p>
+
     <form method="POST">
-        <label>Project Name:</label>
-        <input type="text" name="project_name" required>
-        <button type="submit">Create</button>
+        <label>Project Name:</label><br>
+        <input type="text" name="project_name" placeholder="Super Secret Idea" required><br>
+        
+        <label>Deadline:</label><br>
+        <input type="date" name="deadline" required><br>
+        
+        <button type="submit">Let's Go! 🚀</button>
     </form>
-    <a href="/">Back to Projects</a>
+
+    <br>
+    <a href="/">Back to Home</a>
 </body>
 </html>

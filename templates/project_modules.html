@@ -2,58 +2,56 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ project.name }} - Modules</title>
+    <title>{{ project.name }} - Modules 🛠️</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>{{ project.name }}</h1>
-
-    <h2>Project Progress: {{ project_progress }}%</h2>
-    <progress value="{{ project_progress }}" max="100"></progress>
+    <h1>Project: {{ project.name }}</h1>
+    <h3>Overall Progress</h3>
+    <div class="progress-container">
+        <div class="progress-bar" style="width: {{ project_progress }}%;">
+            {{ project_progress }}%
+        </div>
+    </div>
 
     <h2>Modules</h2>
     <ul>
         {% for module in modules %}
             <li>
-                {{ module.name }} - Assigned to: {{ module.member_name if module.member_name else 'Unassigned' }} 
-                {% if module.completed %}
-                    ✅ Completed
-                {% endif %}
-                - <a href="/module/{{ module.id }}">View</a>
+                <div>
+                    <a href="/module/{{ module.id }}"><strong>{{ module.name }}</strong></a><br>
+                    <small>👤 {{ module.member_name if module.member_name else 'Unassigned' }}</small>
+                </div>
+                <span>{{ '✅ Done' if module.completed else '⏳ In Progress' }}</span>
             </li>
         {% else %}
-            <li>No modules yet.</li>
+            <li style="justify-content: center;">No modules yet. Break the project down!</li>
         {% endfor %}
     </ul>
 
-    <h3>Add Module</h3>
-    <form method="POST" action="/project/{{ project.id }}/add_module">
-        <label>Module Name:</label>
-        <input type="text" name="module_name" required>
+    <hr style="border: 1px dashed #90e0ef; width: 60%;">
 
-        <label>Assign Member:</label>
+    <h3>Add Team Member</h3>
+    <form method="POST" action="/project/{{ project.id }}/add_member">
+        <input type="text" name="member_name" placeholder="New Member Name" required>
+        <button type="submit">Add 👤</button>
+    </form>
+
+    <h3>Add New Module</h3>
+    <form method="POST" action="/project/{{ project.id }}/add_module">
+        <input type="text" name="module_name" placeholder="What needs to be done?" required>
         <select name="assigned_member" required>
+            <option value="" disabled selected>Assign to...</option>
             {% for member in members %}
                 <option value="{{ member.id }}">{{ member.name }}</option>
             {% endfor %}
         </select>
-
-        <button type="submit">Add Module</button>
+        <button type="submit">Add 🎯</button>
     </form>
 
-    <h3>Add Member</h3>
-    <form method="POST" action="/project/{{ project.id }}/add_member">
-        <label>Member Name:</label>
-        <input type="text" name="member_name" required>
-        <button type="submit">Add Member</button>
-    </form>
-
-    {% if project_progress == 100 %}
-        <h3>Project Complete! 🎉</h3>
-        <form action="/project/{{ project.id }}/report">
-            <button type="submit">View Final Report</button>
-        </form>
-    {% endif %}
-
+    <br>
+    <a href="/project/{{ project.id }}/report"><button style="background: #ffb703;">View Final Report 🏆</button></a>
+    <br>
     <a href="/">Back to Projects</a>
 </body>
 </html>
