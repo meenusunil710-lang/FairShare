@@ -117,5 +117,5 @@ FairShare/
     ├─ style.css             <-- Main CSS file
 
 --• Author info
-Developed by: HackHer Duo(Meenu Sunil,Norlida Zakariya)
+Developed by: HackHer Duo(Meenu Sunil- Backend+Database ,Norlida Zakariya - Frontend+Templates)
             
