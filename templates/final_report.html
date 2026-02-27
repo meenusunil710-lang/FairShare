@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ project.name }} - Final Report</title>
+</head>
+<body>
+    <h1>Final Report: {{ project.name }}</h1>
+
+    {% for module in modules %}
+        <h3>Module: {{ module.name }} - Assigned to: {{ module.member_name if module.member_name else 'Unassigned' }}</h3>
+        <p>Status: {{ 'Completed ✅' if module.completed else 'Pending' }}</p>
+
+        <ul>
+            {% for update in updates[module.id] %}
+                <li>{{ update.update_date }}: {{ update.update_text }}</li>
+            {% else %}
+                <li>No updates</li>
+            {% endfor %}
+        </ul>
+    {% endfor %}
+
+    <a href="/project/{{ project.id }}">Back to Project</a>
+</body>
+</html>

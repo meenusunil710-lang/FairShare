@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FairShare</title>
+</head>
+<body>
+    <h1>Welcome to FairShare</h1>
+
+    <a href="/create">Create New Project</a>
+
+    <h3>Projects:</h3>
+   <ul>
+    {% for project in projects %}
+        <li>
+            <a href="/project/{{ project[0] }}">
+                {{ project[1] }}
+            </a>
+        </li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>

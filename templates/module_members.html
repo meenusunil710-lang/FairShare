@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ module['name'] }} - Updates</title>
+</head>
+<body>
+    <h1>Module: {{ module['name'] }}</h1>
+    <h2>Assigned Member</h2>
+    <p>{{ member['name'] }}</p>
+
+    <h3>Updates</h3>
+    <ul>
+        {% for u in updates %}
+            <li>{{ u['update_date'] }} - {{ u['update_text'] }}</li>
+        {% else %}
+            <li>No updates yet.</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Add Update</h3>
+    <form method="POST" action="/module/{{ module['id'] }}/add_update">
+        <label>Date:</label>
+        <input type="date" name="update_date" required>
+        <label>Update:</label>
+        <input type="text" name="update_text" required>
+        <button type="submit">Add Update</button>
+    </form>
+
+    {% if not module['completed'] %}
+        <form method="POST" action="/module/{{ module['id'] }}/complete">
+            <button type="submit">Mark Module Complete</button>
+        </form>
+    {% else %}
+        <p><strong>Module Completed ✅</strong></p>
+    {% endif %}
+
+    <a href="/project/{{ module['project_id'] }}">Back to Project</a>
+</body>
+</html>

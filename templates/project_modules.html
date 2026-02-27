@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ project.name }} - Modules</title>
+</head>
+<body>
+    <h1>{{ project.name }}</h1>
+
+    <h2>Project Progress: {{ project_progress }}%</h2>
+    <progress value="{{ project_progress }}" max="100"></progress>
+
+    <h2>Modules</h2>
+    <ul>
+        {% for module in modules %}
+            <li>
+                {{ module.name }} - Assigned to: {{ module.member_name if module.member_name else 'Unassigned' }} 
+                {% if module.completed %}
+                    ✅ Completed
+                {% endif %}
+                - <a href="/module/{{ module.id }}">View</a>
+            </li>
+        {% else %}
+            <li>No modules yet.</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Add Module</h3>
+    <form method="POST" action="/project/{{ project.id }}/add_module">
+        <label>Module Name:</label>
+        <input type="text" name="module_name" required>
+
+        <label>Assign Member:</label>
+        <select name="assigned_member" required>
+            {% for member in members %}
+                <option value="{{ member.id }}">{{ member.name }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Add Module</button>
+    </form>
+
+    <h3>Add Member</h3>
+    <form method="POST" action="/project/{{ project.id }}/add_member">
+        <label>Member Name:</label>
+        <input type="text" name="member_name" required>
+        <button type="submit">Add Member</button>
+    </form>
+
+    {% if project_progress == 100 %}
+        <h3>Project Complete! 🎉</h3>
+        <form action="/project/{{ project.id }}/report">
+            <button type="submit">View Final Report</button>
+        </form>
+    {% endif %}
+
+    <a href="/">Back to Projects</a>
+</body>
+</html>

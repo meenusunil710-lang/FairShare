@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Log Progress</title>
+</head>
+<body>
+    <h1>Log Progress</h1>
+    <form method="POST">
+        <label>Progress (%)</label>
+        <input type="number" name="progress" min="0" max="100" required><br>
+
+        <label>Comment:</label>
+        <textarea name="comment" rows="4" cols="50"></textarea><br>
+
+        <button type="submit" name="completed">Mark Completed</button>
+    </form>
+    <a href="/module/{{ module_id }}">Back to Module</a>
+</body>
+</html>
