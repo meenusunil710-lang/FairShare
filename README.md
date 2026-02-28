@@ -118,4 +118,5 @@ FairShare/
 
 --• Author info
 Developed by: HackHer Duo(Meenu Sunil- Backend+Database ,Norlida Zakariya - Frontend+Templates)
+DEPLOY LINK https://fairshare-gtkr.onrender.com
             
