@@ -78,6 +78,7 @@ Access:
 Open your browser and go to http://127.0.0.1:5000.
 
 --• Features
+FRONTEND RUNS THROUGH BACKEND
 Solid Dashboard: A clean, high-contrast interface for managing multiple projects at once.
 
 Progress Automation: Visual progress bars that update automatically as tasks are marked complete.
