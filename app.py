@@ -1,6 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for
 import sqlite3
 from datetime import datetime
+import os
+# Get the absolute path to the directory this file is in
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+DB_PATH = os.path.join(BASE_DIR, "fairshare.db")
+
+def get_db_connection():
+    conn = sqlite3.connect(DB_PATH, timeout=30) # Use the absolute path
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    return conn
 
 app = Flask(__name__)
 
