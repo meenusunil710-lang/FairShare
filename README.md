@@ -1,27 +1,40 @@
 FairShare 🎯
 Basic Details
+
+
 Team Name: HackHer Duo
+
 Team Members
+
 Member 1: Meenu Sunil - College of Engineering Chengannur
+
 Member 2: Norlida Zakariya - College of Engineering Chengannur
+
 Hosted Project Link
 https://fairshare-gtkr.onrender.com
 
 Project Description
+
 FairShare is a streamlined project management dashboard designed to take the chaos out of team collaboration. It allows users to create projects, break them down into specific modules, and assign team members to lead those tasks. The app calculates real-time progress based on task completion and generates professional summary reports.
 
 The Problem statement
+
 In group projects, it is often difficult to accurately track each member’s contributions, which can lead to unfair allocation of credit, confusion during report submission, and disputes over performance evaluation. Teams need a system that transparently records individual contributions, aggregates them, and generates a final report that reflects each member’s effort.
 
 The Solution
+
 Develop a web-based application that allows team members to log their tasks and contributions in real time. The system automatically tracks who did what, assigns weights or points to tasks, and generates a summary dashboard showing each member’s contribution. At the end, it produces a consolidated report that can be submitted along with the project, ensuring transparency and fair credit distribution.
 
 Technical Details
+
 Technologies/Components Used
+
 For Software:
 
 Languages used: Python
+
 Frameworks used: Flask
+
 Libraries used: 
 
 Flask – Core web framework to handle routes, forms, and requests.
@@ -211,9 +224,13 @@ Updates the progress of a specific module and logs contribution details.
 ```
 
 Project Demo
+
 Video
+
 https://drive.google.com/file/d/1o1UkSPH1Sezvg7s-cAfcd4pgsoQjbYdH/view?usp=drivesdk
+
 Description:
+
 FairShare – Smart Contribution Tracking for Group Projects
 FairShare is a web-based application designed to ensure transparency and fairness in group projects. It allows teams to create projects, divide them into modules, assign members, and track individual contributions in real time. The system automatically calculates progress percentages and generates a final report summarizing each member’s share of work.
 Built using Python (Flask) and SQLite for the backend, and HTML/CSS for the frontend, FairShare provides a simple yet effective solution to manage collaborative academic projects.
@@ -225,9 +242,11 @@ If you used AI tools during development, document them here for transparency:
 Tool Used: GitHub Copilot, ChatGPT, Gemini
 
 Purpose:
+
 AI tools were used to accelerate development, generate boilerplate code, debug backend logic, structure database models, refine API endpoints, and improve UI layout consistency. They also assisted in optimizing queries, validating logic flow, and suggesting cleaner architectural patterns.
 
 Examples:
+
 Generated initial Flask project structure and route templates
 Created REST API endpoints for project and module management
 Assisted in debugging database relationship errors
@@ -236,6 +255,7 @@ Provided UI structure and layout refinement ideas
 Helped review and optimize code for better readability
 
 Key Prompts Used
+
 “Create a REST API endpoint for project creation in Flask.”
 “Debug this Flask route that is not updating the database.”
 “Design a database schema for tracking project contributions.”
@@ -243,9 +263,12 @@ Key Prompts Used
 “Suggest improvements for a project contribution tracking system.”
 
 Human Contributions:
+
 The project idea, system design, and overall workflow were planned by the team. Database structure, backend logic, and frontend layout were implemented and integrated manually. Contribution calculations, report generation, testing, debugging, and final refinements were done by us to ensure the system works correctly and meets the project goals.
 
 
 Team Contributions
+
 Meenu Sunil:Backend 
+
 Norlida Zakariya:Frontend and Backend planning
