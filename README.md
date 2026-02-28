@@ -103,9 +103,20 @@ Project Documentation
 For Software:
 Screenshots (Add at least 3)
 <img width="1914" height="870" alt="Screenshot 2026-02-28 092742" src="https://github.com/user-attachments/assets/07993632-d260-4d1d-a7ec-1fdabb3b26e1" />
+
+Dashboard
+
 <img width="1866" height="869" alt="Screenshot 2026-02-28 094840" src="https://github.com/user-attachments/assets/ca617a2a-e4c7-42a7-be2e-dd84752ce34d" />
+
+Add member and modules
+
 <img width="1846" height="800" alt="Screenshot 2026-02-28 094926" src="https://github.com/user-attachments/assets/577c2e84-2c19-4281-9bd4-c5cd260dba7c" />
+
+Module complete
+
 <img width="1822" height="909" alt="Screenshot 2026-02-28 095003" src="https://github.com/user-attachments/assets/aa53f028-2845-4e70-9958-7224ed7525a0" />
+
+Final report
 
 Diagrams
 System Architecture:
