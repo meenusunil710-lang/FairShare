@@ -23,6 +23,7 @@ For Software:
 Languages used: Python
 Frameworks used: Flask
 Libraries used: 
+
 Flask – Core web framework to handle routes, forms, and requests.
 Flask-SQLAlchemy – ORM for managing SQLite database easily.
 Flask-CORS – Allows your frontend (HTML/JS) to communicate with Flask APIs.
@@ -46,14 +47,18 @@ Libraries/Extensions: Flask-CORS for API communication, optional Chart.js for da
 Architecture: MVC pattern – Models (data), Views (templates), Controllers (Flask routes).
 Deployment: Runs on local server for hackathon; scalable to cloud if needed.
 Version Control: Git + GitHub for collaborative development.
+
 Tools required: 
+
 Python 3 – To run the Flask backend.
 Flask – Web framework for building the server.
 SQLite3 – Lightweight relational database.
 VS Code – IDE for coding frontend and backend.
 Git & GitHub – Version control and collaboration.
 Web Browser – To run and test the web application
+
 Features
+
 List the key features of your project:
 1.Solid Dashboard: A clean, high-contrast interface for managing multiple projects at once.
 2.Progress Automation: Visual progress bars that update automatically as tasks are marked complete.
@@ -63,27 +68,31 @@ List the key features of your project:
 6.Reliable Database: Uses SQLite in WAL Mode to prevent "Database Locked" errors and ensure smooth performance
 
 Implementation
+
 For Software:
 Installation
-# 1. Create a virtual environment (optional but recommended)
+Create a virtual environment (optional but recommended)
 python -m venv venv
-# 2. Activate the virtual environment
-# On Windows:
+Activate the virtual environment
+On Windows:
 venv\Scripts\activate
-# On Linux/Mac:
+On Linux/Mac:
 source venv/bin/activate
-# 3. Install required Python libraries
+Install required Python libraries
 pip install -r requirements.txt
 Run
-# Start the Flask server
+Start the Flask server
 python app.py
-# Open a web browser and go to
+Open a web browser and go to
 http://127.0.0.1:5000
 
 Project Documentation
 For Software:
 Screenshots (Add at least 3)
-<img width="1875" height="857" alt="Screenshot 2026-02-28 094952" src="https://github.com/user-attachments/assets/498be5b2-0939-4e9a-b85d-37fefb0a7b4d" />
+<img width="1914" height="870" alt="Screenshot 2026-02-28 092742" src="https://github.com/user-attachments/assets/07993632-d260-4d1d-a7ec-1fdabb3b26e1" />
+<img width="1866" height="869" alt="Screenshot 2026-02-28 094840" src="https://github.com/user-attachments/assets/ca617a2a-e4c7-42a7-be2e-dd84752ce34d" />
+<img width="1846" height="800" alt="Screenshot 2026-02-28 094926" src="https://github.com/user-attachments/assets/577c2e84-2c19-4281-9bd4-c5cd260dba7c" />
+<img width="1822" height="909" alt="Screenshot 2026-02-28 095003" src="https://github.com/user-attachments/assets/aa53f028-2845-4e70-9958-7224ed7525a0" />
 
 Diagrams
 System Architecture:
