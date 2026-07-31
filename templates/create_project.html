@@ -1,59 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FairShare | Create New Project</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fairshare — New Project</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --paper:#f7f4ee; --paper-2:#f0ece0; --white:#fffdf9;
+      --ink:#1a1a1a; --pencil:#8a8070; --blue:#2563eb; --blue-lt:rgba(37,99,235,0.1);
+      --green:#15803d; --red:#dc2626; --red-lt:rgba(220,38,38,0.08);
+      --hi:rgba(251,191,36,0.4); --shadow:rgba(30,27,20,0.1);
+      --sb-w:230px; --font:'Caveat', cursive;
+    }
+    html, body { height:100%; font-family:var(--font); background-color:var(--paper);
+      background-image:linear-gradient(rgba(0,0,100,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,100,0.02) 1px,transparent 1px);
+      background-size:28px 28px; color:var(--ink); }
+    @keyframes fadeUp  { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes drawLine{ from{width:0} to{width:100%} }
+
+    /* Sidebar */
+    .sidebar { position:fixed; left:0; top:0; bottom:0; width:var(--sb-w); background:var(--paper-2); border-right:2px dashed rgba(26,26,26,0.25); display:flex; flex-direction:column; z-index:100; }
+    .sb-logo { padding:1.5rem 1.25rem 1rem; border-bottom:1.5px solid rgba(26,26,26,0.15); }
+    .sb-logo-name { font-size:1.8rem; font-weight:700; position:relative; display:inline-block; }
+    .sb-logo-name::after { content:''; position:absolute; bottom:0; left:0; height:2.5px; background:var(--ink); border-radius:2px; animation:drawLine 0.5s ease 0.2s both; }
+    .sb-logo-sub { font-size:0.85rem; color:var(--pencil); margin-top:2px; }
+    .sb-nav { flex:1; padding:1rem 0.75rem; }
+    .sb-section { font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--pencil); margin:1rem 0 0.4rem 0.4rem; }
+    .sb-item { display:flex; align-items:center; gap:0.5rem; padding:0.45rem 0.6rem; margin-bottom:2px; font-size:1.1rem; color:var(--pencil); text-decoration:none; border-radius:3px; position:relative; }
+    .sb-item:hover { color:var(--ink); background:rgba(0,0,0,0.04); }
+    .sb-item.active { color:var(--ink); font-weight:700; background:var(--hi); border-radius:3px 10px 3px 10px / 10px 3px 10px 3px; }
+    .sb-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:transparent; border-radius:2px; }
+    .sb-item.active::before { background:var(--ink); }
+    .sb-item-arrow { margin-left:auto; opacity:0; }
+    .sb-item:hover .sb-item-arrow, .sb-item.active .sb-item-arrow { opacity:1; }
+    .sb-footer { padding:0.85rem; border-top:1.5px dashed rgba(26,26,26,0.2); }
+    .sb-user-card { background:var(--white); border:1.5px solid rgba(26,26,26,0.2); border-radius:4px 12px 4px 12px / 12px 4px 12px 4px; padding:0.6rem 0.75rem; margin-bottom:0.6rem; }
+    .sb-user-name { font-size:1rem; font-weight:700; }
+    .sb-user-label { font-size:0.75rem; color:var(--pencil); }
+    .sb-logout { width:100%; padding:0.45rem; font-family:var(--font); font-size:0.95rem; background:transparent; border:1.5px solid rgba(26,26,26,0.3); border-radius:3px 10px 3px 10px / 10px 3px 10px 3px; color:var(--pencil); cursor:pointer; }
+    .sb-logout:hover { border-color:var(--red); color:var(--red); background:var(--red-lt); }
+
+    .main { margin-left:var(--sb-w); min-height:100vh; display:flex; flex-direction:column; }
+    .topbar { position:sticky; top:0; z-index:50; background:rgba(247,244,238,0.95); backdrop-filter:blur(6px); border-bottom:1.5px dashed rgba(26,26,26,0.2); padding:0.85rem 1.75rem; display:flex; align-items:center; justify-content:space-between; }
+    .tb-title { font-size:1.6rem; font-weight:700; }
+    .tb-sub { font-size:0.9rem; color:var(--pencil); }
+    .sketch-btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.5rem 1rem; font-family:var(--font); font-size:1rem; font-weight:700; cursor:pointer; border:2px solid var(--ink); text-decoration:none; box-shadow:3px 3px 0 var(--shadow); transition:transform 0.1s,box-shadow 0.1s; }
+    .btn-ink { background:var(--ink); color:var(--paper); border-radius:3px 14px 3px 14px / 14px 3px 14px 3px; }
+    .btn-ink:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--shadow); }
+    .btn-ink:active { transform:translate(1px,1px); box-shadow:1px 1px 0 var(--shadow); }
+    .btn-ghost { background:transparent; color:var(--ink); border-radius:12px 3px 12px 3px / 3px 12px 3px 12px; }
+    .btn-ghost:hover { background:rgba(0,0,0,0.04); }
+
+    .content { padding:2rem 1.75rem; flex:1; display:flex; gap:2rem; align-items:flex-start; }
+
+    /* Form paper */
+    .form-sheet {
+      flex:1; max-width:500px;
+      background:var(--white); border:2px solid rgba(26,26,26,0.25);
+      border-radius:4px 20px 4px 20px / 20px 4px 20px 4px;
+      box-shadow:5px 6px 0 var(--shadow);
+      position:relative; overflow:hidden;
+      animation:fadeUp 0.3s ease both;
+    }
+    /* Ruled lines in form background */
+    .form-sheet::before {
+      content:''; position:absolute; inset:0; pointer-events:none;
+      background:repeating-linear-gradient(0deg, transparent 0, transparent 31px, rgba(37,99,235,0.08) 31px, rgba(37,99,235,0.08) 32px);
+      top:68px;
+    }
+    .form-header { padding:1.25rem 1.5rem; border-bottom:2px solid rgba(26,26,26,0.12); position:relative; z-index:1; }
+    .form-title { font-size:1.8rem; font-weight:700; }
+    .form-sub { font-size:0.95rem; color:var(--pencil); }
+    .form-annotation { position:absolute; top:0.75rem; right:1.25rem; font-size:0.75rem; color:var(--pencil); transform:rotate(1.5deg); opacity:0.6; }
+    .form-body { padding:1.5rem; position:relative; z-index:1; }
+
+    .field { margin-bottom:1.75rem; position:relative; }
+    .field-label { display:block; font-size:0.85rem; color:var(--pencil); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:0.4rem; }
+    .field-label::before { content:'— '; }
+    .field-hint { font-size:0.8rem; color:var(--pencil); margin-top:0.3rem; opacity:0.7; }
+    .field-hint::before { content:'↳ '; }
+
+    .sketch-input { width:100%; padding:0.5rem 0.1rem; background:transparent; border:none; border-bottom:2px solid var(--ink); font-family:var(--font); font-size:1.15rem; color:var(--ink); outline:none; }
+    .sketch-input:focus { border-bottom-color:var(--blue); }
+    .sketch-input::placeholder { color:var(--pencil); opacity:0.5; }
+    input[type="date"]::-webkit-calendar-picker-indicator { opacity:0.5; }
+    .field::after { content:''; position:absolute; bottom:0; left:0; height:2px; width:0; background:var(--blue); transition:width 0.2s ease; }
+    .field:focus-within::after { width:100%; }
+
+    .form-actions { display:flex; gap:0.75rem; margin-top:0.5rem; }
+    .btn-submit { flex:1; padding:0.7rem 1rem; background:var(--ink); color:var(--paper); border:2px solid var(--ink); border-radius:14px 3px 14px 3px / 3px 14px 3px 14px; font-family:var(--font); font-size:1.1rem; font-weight:700; cursor:pointer; box-shadow:3px 4px 0 var(--shadow); transition:transform 0.1s,box-shadow 0.1s; }
+    .btn-submit:hover { transform:translate(-1px,-1px); box-shadow:4px 5px 0 var(--shadow); }
+    .btn-submit:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--shadow); }
+
+    /* Side tips */
+    .tips-col { width:220px; flex-shrink:0; }
+    .tips-card {
+      background:rgba(251,191,36,0.12); border:1.5px solid rgba(180,83,9,0.25);
+      border-radius:3px 14px 3px 14px / 14px 3px 14px 3px;
+      padding:1.1rem; box-shadow:3px 3px 0 var(--shadow);
+      transform:rotate(0.8deg);
+      animation:fadeUp 0.3s ease 0.2s both;
+    }
+    .tips-title { font-size:1.1rem; font-weight:700; margin-bottom:0.75rem; }
+    .tip-item { font-size:0.95rem; color:var(--pencil); margin-bottom:0.5rem; line-height:1.4; }
+    .tip-item::before { content:'→ '; color:var(--amber); }
+
+    @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.content{flex-direction:column;padding:1rem}.tips-col{width:100%}}
+  </style>
 </head>
 <body>
-
-    <nav class="sidebar">
-        <div class="logo">FairShare.</div>
-        <a href="/" class="btn-nav"><span>📊</span> Dashboard</a>
-        <a href="/create" class="btn-nav active"><span>✨</span> New Project</a>
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-name">Fairshare</div>
+      <div class="sb-logo-sub">project management</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">Navigation</div>
+      <a href="{{ url_for('home') }}" class="sb-item"><span>📋</span> Dashboard <span class="sb-item-arrow">→</span></a>
+      <a href="{{ url_for('create') }}" class="sb-item active"><span>＋</span> New Project <span class="sb-item-arrow">→</span></a>
     </nav>
+    <div class="sb-footer">
+      <div class="sb-user-card">
+        <div class="sb-user-label">signed in as</div>
+        <div class="sb-user-name">{{ user_name }}</div>
+      </div>
+      <form action="{{ url_for('logout') }}" method="get" style="margin:0">
+        <button type="submit" class="sb-logout">↩ Sign out</button>
+      </form>
+    </div>
+  </aside>
 
-    <main class="content" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        
-        <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="font-size: 2.5rem; font-weight: 800; margin: 0;">Ignite a New Idea 🚀</h1>
-            <p style="color: #64748b;">Fill in the details below to set your project in motion.</p>
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="tb-title">New Project</div>
+        <div class="tb-sub">Fill in the details below</div>
+      </div>
+      <a href="{{ url_for('home') }}" class="sketch-btn btn-ghost">← Back</a>
+    </header>
+
+    <div class="content">
+      <div class="form-sheet">
+        <div class="form-header">
+          <div class="form-title">Create project</div>
+          <div class="form-sub">Give your project a name and timeline</div>
+          <div class="form-annotation">form #001</div>
         </div>
-
-        <div class="card" style="width: 100%; max-width: 500px; padding: 40px;">
-            <form method="POST">
-                <div style="margin-bottom: 25px;">
-                    <label style="display: block; font-weight: 700; margin-bottom: 10px; color: #4f46e5; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
-                        Project Name
-                    </label>
-                    <input type="text" name="project_name"  required>
-                </div>
-
-                <div style="margin-bottom: 35px;">
-                    <label style="display: block; font-weight: 700; margin-bottom: 10px; color: #4f46e5; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">
-                        Target Deadline
-                    </label>
-                    <input type="date" name="deadline" required>
-                </div>
-
-                <div style="display: flex; flex-direction: column; gap: 15px;">
-                    <button type="submit" class="btn-action" style="width: 100%; font-size: 1.1rem; padding: 16px;">
-                        Create Workspace →
-                    </button>
-                    
-                    <a href="/" class="btn-outline" style="text-align: center; text-decoration: none; padding: 12px;">
-                        Cancel and Go Back
-                    </a>
-                </div>
-            </form>
+        <div class="form-body">
+          <form method="POST" action="{{ url_for('create') }}" id="createForm">
+            <div class="field">
+              <label class="field-label" for="project_name">Project name</label>
+              <input type="text" id="project_name" name="project_name" class="sketch-input" placeholder="e.g. Mobile App Redesign" required maxlength="80"/>
+              <div class="field-hint">Pick something memorable</div>
+            </div>
+            <div class="field">
+              <label class="field-label" for="deadline">Deadline</label>
+              <input type="date" id="deadline" name="deadline" class="sketch-input"/>
+              <div class="field-hint">Optional — helps track urgency</div>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn-submit" id="submitBtn">→ Create project</button>
+              <a href="{{ url_for('home') }}" class="sketch-btn btn-ghost" style="padding:0.7rem 1rem">✕</a>
+            </div>
+          </form>
         </div>
+      </div>
 
-        <div style="margin-top: 30px; background: rgba(99, 102, 241, 0.1); padding: 15px 25px; border-radius: 20px; color: #4f46e5; font-size: 0.85rem; font-weight: 600;">
-            💡 Pro-tip: Clear names help your team stay focused!
+      <div class="tips-col">
+        <div class="tips-card">
+          <div class="tips-title">💡 Quick tips</div>
+          <div class="tip-item">Add team members after creating</div>
+          <div class="tip-item">Break work into modules</div>
+          <div class="tip-item">Log progress with updates</div>
+          <div class="tip-item">Generate a report anytime</div>
         </div>
+      </div>
+    </div>
+  </div>
 
-    </main>
-
+  <script>
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('deadline').setAttribute('min', today);
+    document.getElementById('createForm').addEventListener('submit', () => {
+      const b = document.getElementById('submitBtn'); b.textContent = '... creating'; b.disabled = true;
+    });
+  </script>
 </body>
 </html>

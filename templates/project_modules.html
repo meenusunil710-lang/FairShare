@@ -1,100 +1,329 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>{{ project.name }} Workspace</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fairshare — {{ project.name }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --paper:#f7f4ee; --paper-2:#f0ece0; --white:#fffdf9;
+      --ink:#1a1a1a; --pencil:#8a8070; --blue:#2563eb; --blue-lt:rgba(37,99,235,0.1);
+      --green:#15803d; --green-lt:rgba(21,128,61,0.1);
+      --amber:#b45309; --amber-lt:rgba(180,83,9,0.1);
+      --red:#dc2626; --red-lt:rgba(220,38,38,0.08);
+      --hi:rgba(251,191,36,0.4); --shadow:rgba(30,27,20,0.1);
+      --sb-w:230px; --font:'Caveat', cursive;
+    }
+    html, body { height:100%; font-family:var(--font); background-color:var(--paper);
+      background-image:linear-gradient(rgba(0,0,100,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,100,0.02) 1px,transparent 1px);
+      background-size:28px 28px; color:var(--ink); }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes drawLine { from{width:0} to{width:100%} }
+    @keyframes rowIn  { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
+
+    /* Sidebar */
+    .sidebar { position:fixed; left:0; top:0; bottom:0; width:var(--sb-w); background:var(--paper-2); border-right:2px dashed rgba(26,26,26,0.25); display:flex; flex-direction:column; z-index:100; }
+    .sb-logo { padding:1.5rem 1.25rem 1rem; border-bottom:1.5px solid rgba(26,26,26,0.15); }
+    .sb-logo-name { font-size:1.8rem; font-weight:700; position:relative; display:inline-block; }
+    .sb-logo-name::after { content:''; position:absolute; bottom:0; left:0; height:2.5px; background:var(--ink); border-radius:2px; animation:drawLine 0.5s ease 0.2s both; }
+    .sb-logo-sub { font-size:0.85rem; color:var(--pencil); margin-top:2px; }
+    .sb-nav { flex:1; padding:1rem 0.75rem; overflow-y:auto; }
+    .sb-section { font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--pencil); margin:1rem 0 0.4rem 0.4rem; }
+    .sb-item { display:flex; align-items:center; gap:0.5rem; padding:0.45rem 0.6rem; margin-bottom:2px; font-size:1.1rem; color:var(--pencil); text-decoration:none; border-radius:3px; position:relative; }
+    .sb-item:hover { color:var(--ink); background:rgba(0,0,0,0.04); }
+    .sb-item.active { color:var(--ink); font-weight:700; background:var(--hi); border-radius:3px 10px 3px 10px / 10px 3px 10px 3px; }
+    .sb-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:transparent; border-radius:2px; }
+    .sb-item.active::before { background:var(--ink); }
+    .sb-item-arrow { margin-left:auto; opacity:0; }
+    .sb-item:hover .sb-item-arrow,.sb-item.active .sb-item-arrow { opacity:1; }
+    .sb-footer { padding:0.85rem; border-top:1.5px dashed rgba(26,26,26,0.2); }
+    .sb-user-card { background:var(--white); border:1.5px solid rgba(26,26,26,0.2); border-radius:4px 12px 4px 12px / 12px 4px 12px 4px; padding:0.6rem 0.75rem; margin-bottom:0.6rem; }
+    .sb-user-name { font-size:1rem; font-weight:700; }
+    .sb-user-label { font-size:0.75rem; color:var(--pencil); }
+    .sb-logout { width:100%; padding:0.45rem; font-family:var(--font); font-size:0.95rem; background:transparent; border:1.5px solid rgba(26,26,26,0.3); border-radius:3px 10px 3px 10px / 10px 3px 10px 3px; color:var(--pencil); cursor:pointer; }
+    .sb-logout:hover { border-color:var(--red); color:var(--red); background:var(--red-lt); }
+
+    .main { margin-left:var(--sb-w); min-height:100vh; display:flex; flex-direction:column; }
+    .topbar { position:sticky; top:0; z-index:50; background:rgba(247,244,238,0.95); backdrop-filter:blur(6px); border-bottom:1.5px dashed rgba(26,26,26,0.2); padding:0.85rem 1.75rem; display:flex; align-items:center; justify-content:space-between; }
+    .tb-title { font-size:1.5rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%; }
+    .tb-sub { font-size:0.9rem; color:var(--pencil); }
+    .tb-acts { display:flex; gap:0.5rem; flex-shrink:0; }
+
+    .sketch-btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.85rem; font-family:var(--font); font-size:0.95rem; font-weight:600; cursor:pointer; border:1.5px solid var(--ink); text-decoration:none; box-shadow:2px 2px 0 var(--shadow); transition:transform 0.1s,box-shadow 0.1s; }
+    .btn-ink { background:var(--ink); color:var(--paper); border-radius:3px 12px 3px 12px / 12px 3px 12px 3px; }
+    .btn-ink:hover { transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--shadow); }
+    .btn-ink:active { transform:translate(1px,1px); box-shadow:none; }
+    .btn-ghost { background:transparent; color:var(--ink); border-radius:10px 3px 10px 3px / 3px 10px 3px 10px; }
+    .btn-ghost:hover { background:rgba(0,0,0,0.04); }
+
+    .content { padding:1.75rem; flex:1; }
+
+    /* Hero banner */
+    .hero {
+      background:var(--white); border:1.5px solid rgba(26,26,26,0.2);
+      border-radius:4px 18px 4px 18px / 18px 4px 18px 4px;
+      box-shadow:4px 5px 0 var(--shadow); margin-bottom:1.5rem;
+      padding:1.25rem 1.5rem; position:relative; overflow:hidden;
+      animation:fadeUp 0.3s ease both;
+    }
+    .hero::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--blue); }
+    .hero-name { font-size:2rem; font-weight:700; margin-bottom:0.25rem; }
+    .hero-meta { font-size:0.95rem; color:var(--pencil); margin-bottom:1rem; }
+    .hero-badges { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem; }
+    .badge { font-size:0.8rem; padding:1px 10px; border:1.5px solid; border-radius:2px 8px 2px 8px / 8px 2px 8px 2px; }
+    .badge-blue   { border-color:var(--blue);  color:var(--blue);  background:var(--blue-lt); }
+    .badge-green  { border-color:var(--green); color:var(--green); background:var(--green-lt); }
+    .badge-amber  { border-color:var(--amber); color:var(--amber); background:var(--amber-lt); }
+    .badge-pencil { border-color:var(--pencil);color:var(--pencil); }
+    .prog-label { display:flex; justify-content:space-between; font-size:0.9rem; color:var(--pencil); margin-bottom:4px; }
+    .prog-bar { height:12px; background:rgba(0,0,0,0.06); border:1.5px solid var(--pencil); border-radius:1px 6px 1px 6px / 6px 1px 6px 1px; overflow:hidden; }
+    .prog-fill { height:100%; transition:width 0.8s ease; }
+    .hatch-blue  { background:repeating-linear-gradient(-45deg,var(--blue)  0,var(--blue)  5px,var(--blue-lt)  5px,var(--blue-lt)  9px); }
+    .hatch-green { background:repeating-linear-gradient(-45deg,var(--green) 0,var(--green) 5px,var(--green-lt) 5px,var(--green-lt) 9px); }
+    .hatch-amber { background:repeating-linear-gradient(-45deg,var(--amber) 0,var(--amber) 5px,var(--amber-lt) 5px,var(--amber-lt) 9px); }
+
+    /* Grid */
+    .grid-2 { display:grid; grid-template-columns:1fr 260px; gap:1.25rem; }
+
+    /* Module list (ruled notebook paper) */
+    .module-sheet {
+      background:var(--white); border:1.5px solid rgba(26,26,26,0.2);
+      border-radius:4px 18px 4px 18px / 18px 4px 18px 4px;
+      box-shadow:4px 5px 0 var(--shadow); overflow:visible;
+      animation:fadeUp 0.3s ease 0.1s both;
+    }
+    .sheet-header { padding:0.85rem 1.1rem; border-bottom:1.5px dashed rgba(26,26,26,0.15); display:flex; align-items:center; justify-content:space-between; }
+    .sheet-title { font-size:1.2rem; font-weight:700; }
+    .sheet-count { font-size:0.85rem; color:var(--pencil); background:var(--paper-2); padding:1px 10px; border:1px solid rgba(0,0,0,0.1); border-radius:4px; }
+
+    /* Module rows */
+    .module-row { display:flex; align-items:stretch; border-bottom:1.5px dashed rgba(26,26,26,0.1); animation:rowIn 0.2s ease both; }
+    .module-row:last-child { border-bottom:none; }
+    .module-link { flex:1; display:flex; align-items:center; gap:0.75rem; padding:0.7rem 1.1rem; text-decoration:none; color:var(--ink); transition:background 0.1s; }
+    .module-link:hover { background:rgba(37,99,235,0.04); }
+    .module-link.done-row { opacity:0.55; }
+
+    .m-check {
+      width:16px; height:16px; border:2px solid var(--pencil); flex-shrink:0;
+      border-radius:2px 6px 2px 6px / 6px 2px 6px 2px;
+      display:flex; align-items:center; justify-content:center; font-size:0.7rem;
+    }
+    .m-check.done { background:var(--green); border-color:var(--green); color:#fff; }
+
+    .m-info { flex:1; min-width:0; }
+    .m-name { font-size:1rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .m-name.done-txt { text-decoration:line-through; }
+    .m-meta { display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center; margin-top:2px; }
+    .m-assignee { font-size:0.78rem; color:var(--pencil); }
+    .pri-tag { font-size:0.72rem; padding:0 8px; border:1px solid; border-radius:2px 6px 2px 6px / 6px 2px 6px 2px; }
+    .pri-high   { border-color:var(--red);   color:var(--red);  }
+    .pri-medium { border-color:var(--amber); color:var(--amber);}
+    .pri-low    { border-color:var(--green); color:var(--green);}
+    .m-arrow { color:var(--pencil); font-size:1rem; padding:0 0.5rem; }
+    .module-link:hover .m-arrow { color:var(--blue); }
+    .m-del-col { display:flex; align-items:center; padding:0 0.5rem; }
+    .del-btn { background:none; border:none; color:var(--pencil); font-size:0.9rem; cursor:pointer; padding:4px 8px; border-radius:3px; font-family:var(--font); transition:all 0.1s; }
+    .del-btn:hover { color:var(--red); background:var(--red-lt); }
+
+    /* Empty */
+    .empty-list { padding:2rem; text-align:center; color:var(--pencil); font-size:1rem; }
+
+    /* Add form */
+    .add-form { border-top:1.5px dashed rgba(26,26,26,0.2); padding:0.85rem 1.1rem; background:rgba(37,99,235,0.03); border-radius:0 0 18px 4px / 0 0 4px 18px; }
+    .add-form-title { font-size:0.8rem; color:var(--blue); letter-spacing:0.06em; margin-bottom:0.6rem; text-transform:uppercase; }
+    .form-row { display:flex; gap:0.5rem; flex-wrap:wrap; align-items:flex-end; }
+    .ff { flex:1; min-width:100px; }
+    .ff-lbl { font-size:0.72rem; color:var(--pencil); display:block; margin-bottom:2px; letter-spacing:0.05em; }
+    .sketch-input-sm { width:100%; padding:0.3rem 0.1rem; background:transparent; border:none; border-bottom:1.5px solid rgba(26,26,26,0.4); font-family:var(--font); font-size:0.95rem; color:var(--ink); outline:none; }
+    .sketch-input-sm:focus { border-bottom-color:var(--blue); }
+    .sketch-input-sm::placeholder { color:var(--pencil); opacity:0.5; }
+    select.sketch-input-sm { cursor:pointer; }
+    .btn-add { padding:0.35rem 0.9rem; background:var(--ink); color:var(--paper); border:1.5px solid var(--ink); border-radius:3px 10px 3px 10px / 10px 3px 10px 3px; font-family:var(--font); font-size:0.9rem; font-weight:700; cursor:pointer; box-shadow:2px 2px 0 var(--shadow); transition:transform 0.1s; white-space:nowrap; }
+    .btn-add:hover { transform:translate(-1px,-1px); }
+    .btn-add:active { transform:translate(1px,1px); box-shadow:none; }
+
+    /* Party panel */
+    .party-panel {
+      background:var(--white); border:1.5px solid rgba(26,26,26,0.2);
+      border-radius:18px 4px 18px 4px / 4px 18px 4px 18px;
+      box-shadow:4px 5px 0 var(--shadow); overflow:visible;
+      animation:fadeUp 0.3s ease 0.15s both;
+    }
+    .party-member { display:flex; align-items:center; gap:0.6rem; padding:0.55rem 1.1rem; border-bottom:1px dashed rgba(26,26,26,0.1); }
+    .party-member:last-child { border-bottom:none; }
+    .party-avatar { width:30px; height:30px; border:2px solid var(--ink); border-radius:3px 10px 3px 10px / 10px 3px 10px 3px; display:flex; align-items:center; justify-content:center; font-size:0.9rem; font-weight:700; background:var(--hi); flex-shrink:0; }
+    .party-name { font-size:1rem; }
+    .empty-party { padding:1rem 1.1rem; color:var(--pencil); font-size:0.9rem; }
+
+    @media(max-width:960px){.grid-2{grid-template-columns:1fr}}
+    @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.content{padding:1rem}}
+  </style>
 </head>
 <body>
-    <nav class="sidebar">
-        <div class="logo">FairShare.</div>
-        <a href="/" class="btn-nav">🏠 Back Home</a>
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-name">Fairshare</div>
+      <div class="sb-logo-sub">project management</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">Navigation</div>
+      <a href="{{ url_for('home') }}" class="sb-item"><span>📋</span> Dashboard <span class="sb-item-arrow">→</span></a>
+      <a href="{{ url_for('create') }}" class="sb-item"><span>＋</span> New Project <span class="sb-item-arrow">→</span></a>
+      <div class="sb-section">Current</div>
+      <div class="sb-item active"><span>📁</span> {{ project.name[:18] }}{{ '…' if project.name|length > 18 else '' }} <span class="sb-item-arrow">→</span></div>
     </nav>
-    <main class="content">
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 40px;">
-            <div>
-                <h1 style="margin: 0; font-size: 2.5rem;">{{ project.name }}</h1>
-                <p style="background: #e0e7ff; display: inline-block; padding: 5px 15px; border-radius: 10px; color: #4f46e5; font-weight: 700; margin-top: 10px;">{{ progress }}% Completed</p>
-            </div>
-            <a href="/project/{{ project.id }}/report" class="btn-outline">📄 Final Report</a>
+    <div class="sb-footer">
+      <div class="sb-user-card">
+        <div class="sb-user-label">signed in as</div>
+        <div class="sb-user-name">{{ user_name }}</div>
+      </div>
+      <form action="{{ url_for('logout') }}" method="get" style="margin:0">
+        <button type="submit" class="sb-logout">↩ Sign out</button>
+      </form>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="tb-title">{{ project.name }}</div>
+        <div class="tb-sub">Project workspace</div>
+      </div>
+      <div class="tb-acts">
+        <a href="{{ url_for('project_report', project_id=project.id) }}" class="sketch-btn btn-ghost">📊 Report</a>
+        <a href="{{ url_for('home') }}" class="sketch-btn btn-ghost">← Back</a>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-name">{{ project.name }}</div>
+        <div class="hero-meta">{% if project.deadline %}Deadline: {{ project.deadline }}{% else %}No deadline set{% endif %}</div>
+        <div class="hero-badges">
+          {% if progress == 100 %}<span class="badge badge-green">✓ Complete</span>
+          {% elif progress >= 50 %}<span class="badge badge-blue">↗ In progress</span>
+          {% else %}<span class="badge badge-amber">○ Started</span>{% endif %}
+          <span class="badge badge-pencil">{{ modules|length }} module{{ 's' if modules|length != 1 else '' }}</span>
+          <span class="badge badge-pencil">{{ members|length }} member{{ 's' if members|length != 1 else '' }}</span>
+        </div>
+        <div class="prog-label">
+          <span>Progress</span>
+          <span style="font-weight:700;color:{% if progress==100 %}var(--green){% elif progress>=50 %}var(--blue){% else %}var(--amber){% endif %}">{{ progress }}%</span>
+        </div>
+        <div class="prog-bar">
+          <div class="prog-fill {% if progress==100 %}hatch-green{% elif progress>=50 %}hatch-blue{% else %}hatch-amber{% endif %}"
+               style="width:0%" data-target="{{ progress }}%"></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Modules -->
+        <div class="module-sheet">
+          <div class="sheet-header">
+            <div class="sheet-title">Modules</div>
+            <span class="sheet-count">{{ modules|length }} items</span>
+          </div>
+
+          {% if modules %}
+            {% for module in modules %}
+              <div class="module-row" style="animation-delay:{{ loop.index * 0.05 }}s">
+                <a href="{{ url_for('module_members', module_id=module.id) }}"
+                   class="module-link {{ 'done-row' if module.completed else '' }}">
+                  <div class="m-check {{ 'done' if module.completed else '' }}">{{ '✓' if module.completed else '' }}</div>
+                  <div class="m-info">
+                    <div class="m-name {{ 'done-txt' if module.completed else '' }}">{{ module.name }}</div>
+                    <div class="m-meta">
+                      {% if module.member_name %}<span class="m-assignee">↳ {{ module.member_name }}</span>{% endif %}
+                      <span class="pri-tag pri-{{ module.priority|lower }}">{{ module.priority }}</span>
+                    </div>
+                  </div>
+                  <span class="m-arrow">›</span>
+                </a>
+                <div class="m-del-col">
+                  <form action="{{ url_for('delete_task', project_id=project.id, module_id=module.id) }}" method="POST" onsubmit="return confirm('Delete module?')">
+                    <button type="submit" class="del-btn">✕</button>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="empty-list">No modules yet — add one below.</div>
+          {% endif %}
+
+          <div class="add-form">
+            <div class="add-form-title">+ Add module</div>
+            <form method="POST" action="{{ url_for('add_module', project_id=project.id) }}">
+              <div class="form-row">
+                <div class="ff" style="flex:2">
+                  <label class="ff-lbl">Name</label>
+                  <input type="text" name="module_name" class="sketch-input-sm" placeholder="Module name..." required/>
+                </div>
+                <div class="ff">
+                  <label class="ff-lbl">Assign to</label>
+                  <select name="assigned_member" class="sketch-input-sm">
+                    <option value="0">Unassigned</option>
+                    {% for member in members %}
+                      <option value="{{ member.id }}">{{ member.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="ff" style="flex:0.8">
+                  <label class="ff-lbl">Priority</label>
+                  <select name="priority" class="sketch-input-sm">
+                    <option value="High">High</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn-add">Add →</button>
+              </div>
+            </form>
+          </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 40px;">
-            <div class="card">
-                <h3 style="margin-bottom: 25px;">Project Tasks</h3>
-                {% for module in modules %}
-                <div style="background: white; border-radius: 20px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; border: 2px solid #f1f5f9;">
-                    <div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <h4 style="margin: 0;">{{ module.name }}</h4>
-                            
-                            {% if module.priority == 'High' %}
-                                <span style="font-size: 0.7rem; background: #fee2e2; color: #ef4444; padding: 2px 8px; border-radius: 6px; font-weight: 800;">HIGH</span>
-                            {% elif module.priority == 'Medium' %}
-                                <span style="font-size: 0.7rem; background: #fef3c7; color: #d97706; padding: 2px 8px; border-radius: 6px; font-weight: 800;">MED</span>
-                            {% else %}
-                                <span style="font-size: 0.7rem; background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 800;">LOW</span>
-                            {% endif %}
-                        </div>
-                        <small style="color: #64748b;">Assigned to <strong>{{ module.member_name }}</strong></small>
-                    </div>
-                    
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        {% if module.completed %}
-                            <span style="color: #10b981; font-weight: 800; font-size: 0.85rem;">✅ Done</span>
-                        {% endif %}
-                        
-                        <a href="/module/{{ module.id }}" class="btn-outline" style="padding: 8px 16px; font-size: 0.9rem;">Details</a>
-                        
-                        <form action="/project/{{ project.id }}/delete_task/{{ module.id }}" method="POST" style="margin: 0;">
-                            <button type="submit" 
-                                    style="background: #fff1f2; border: 1px solid #fecdd3; color: #e11d48; padding: 7px 10px; border-radius: 8px; cursor: pointer; font-size: 0.9rem;" 
-                                    onclick="return confirm('Delete this task and all its progress logs?')">
-                                🗑️
-                            </button>
-                        </form>
-                    </div>
-                </div>
-                {% else %}
-                <div style="text-align: center; padding: 40px; opacity: 0.6;">
-                    <p style="font-size: 3rem; margin: 0;">🔨</p>
-                    <p>No tasks yet. Break the project down to get started!</p>
-                </div>
-                {% endfor %}
+        <!-- Team -->
+        <div>
+          <div class="party-panel">
+            <div class="sheet-header">
+              <div class="sheet-title">Team</div>
+              <span class="sheet-count">{{ members|length }} member{{ 's' if members|length != 1 else '' }}</span>
             </div>
-
-            <div>
-                <div class="card" style="background: white;">
-                    <h3>Manage Team</h3>
-                    <form action="/project/{{ project.id }}/add_member" method="POST">
-                        <input type="text" name="member_name" placeholder="Team Member Name" required>
-                        <button type="submit" class="btn-action" style="width: 100%;">Add Member</button>
-                    </form>
-                    
-                    <hr style="margin: 30px 0; border: none; border-top: 1px solid #f1f5f9;">
-                    
-                    <h3>New Task</h3>
-                    <form action="/project/{{ project.id }}/add_module" method="POST">
-                        <label style="font-size: 0.8rem; font-weight: 700; color: #64748b;">TASK TITLE</label>
-                        <input type="text" name="module_name" placeholder="What needs to be done?" required>
-                        
-                        <label style="font-size: 0.8rem; font-weight: 700; color: #64748b;">ASSIGN TO</label>
-                        <select name="assigned_member" required>
-                            <option value="">Choose Member</option>
-                            {% for member in members %}<option value="{{ member.id }}">{{ member.name }}</option>{% endfor %}
-                        </select>
-
-                        <label style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-top: 10px; display: block;">PRIORITY LEVEL</label>
-                        <select name="priority" required>
-                            <option value="Low">Low 🟢</option>
-                            <option value="Medium" selected>Medium 🟡</option>
-                            <option value="High">High 🔴</option>
-                        </select>
-                        
-                        <button type="submit" class="btn-action" style="width: 100%; margin-top: 10px;">Create Task 🎯</button>
-                    </form>
+            {% if members %}
+              {% for member in members %}
+                <div class="party-member">
+                  <div class="party-avatar">{{ member.name[0].upper() }}</div>
+                  <div class="party-name">{{ member.name }}</div>
                 </div>
+              {% endfor %}
+            {% else %}
+              <div class="empty-party">No members yet — add one below.</div>
+            {% endif %}
+            <div class="add-form" style="background:rgba(251,191,36,0.05)">
+              <div class="add-form-title" style="color:var(--amber)">+ Add member</div>
+              <form method="POST" action="{{ url_for('add_member', project_id=project.id) }}">
+                <div class="form-row" style="flex-wrap:nowrap">
+                  <div class="ff">
+                    <input type="text" name="member_name" class="sketch-input-sm" placeholder="Name..." required/>
+                  </div>
+                  <button type="submit" class="btn-add" style="background:var(--amber);border-color:var(--amber)">Add →</button>
+                </div>
+              </form>
             </div>
+          </div>
         </div>
-    </main>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.querySelectorAll('.prog-fill').forEach(el => { el.style.width = el.dataset.target; });
+      }, 300);
+    });
+  </script>
 </body>
 </html>

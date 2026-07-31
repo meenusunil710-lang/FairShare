@@ -1,98 +1,306 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Task Details | {{ module.name }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fairshare — {{ module.name }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --paper:#f7f4ee; --paper-2:#f0ece0; --white:#fffdf9;
+      --ink:#1a1a1a; --pencil:#8a8070; --blue:#2563eb; --blue-lt:rgba(37,99,235,0.1);
+      --green:#15803d; --green-lt:rgba(21,128,61,0.1);
+      --amber:#b45309; --amber-lt:rgba(180,83,9,0.1);
+      --red:#dc2626; --red-lt:rgba(220,38,38,0.08);
+      --hi:rgba(251,191,36,0.4); --shadow:rgba(30,27,20,0.1);
+      --sb-w:230px; --font:'Caveat', cursive;
+    }
+    html, body { height:100%; font-family:var(--font); background-color:var(--paper);
+      background-image:linear-gradient(rgba(0,0,100,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,100,0.02) 1px,transparent 1px);
+      background-size:28px 28px; color:var(--ink); }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes drawLine { from{width:0} to{width:100%} }
+    @keyframes scrollIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+
+    /* Sidebar */
+    .sidebar { position:fixed; left:0; top:0; bottom:0; width:var(--sb-w); background:var(--paper-2); border-right:2px dashed rgba(26,26,26,0.25); display:flex; flex-direction:column; z-index:100; }
+    .sb-logo { padding:1.5rem 1.25rem 1rem; border-bottom:1.5px solid rgba(26,26,26,0.15); }
+    .sb-logo-name { font-size:1.8rem; font-weight:700; position:relative; display:inline-block; }
+    .sb-logo-name::after { content:''; position:absolute; bottom:0; left:0; height:2.5px; background:var(--ink); border-radius:2px; animation:drawLine 0.5s ease 0.2s both; }
+    .sb-logo-sub { font-size:0.85rem; color:var(--pencil); margin-top:2px; }
+    .sb-nav { flex:1; padding:1rem 0.75rem; overflow-y:auto; }
+    .sb-section { font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--pencil); margin:1rem 0 0.4rem 0.4rem; }
+    .sb-item { display:flex; align-items:center; gap:0.5rem; padding:0.45rem 0.6rem; margin-bottom:2px; font-size:1.1rem; color:var(--pencil); text-decoration:none; border-radius:3px; position:relative; }
+    .sb-item:hover { color:var(--ink); background:rgba(0,0,0,0.04); }
+    .sb-item.active { color:var(--ink); font-weight:700; background:var(--hi); border-radius:3px 10px 3px 10px / 10px 3px 10px 3px; }
+    .sb-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:transparent; border-radius:2px; }
+    .sb-item.active::before { background:var(--ink); }
+    .sb-item-arrow { margin-left:auto; opacity:0; }
+    .sb-item:hover .sb-item-arrow,.sb-item.active .sb-item-arrow { opacity:1; }
+    .sb-footer { padding:0.85rem; border-top:1.5px dashed rgba(26,26,26,0.2); }
+    .sb-user-card { background:var(--white); border:1.5px solid rgba(26,26,26,0.2); border-radius:4px 12px 4px 12px / 12px 4px 12px 4px; padding:0.6rem 0.75rem; margin-bottom:0.6rem; }
+    .sb-user-name { font-size:1rem; font-weight:700; }
+    .sb-user-label { font-size:0.75rem; color:var(--pencil); }
+    .sb-logout { width:100%; padding:0.45rem; font-family:var(--font); font-size:0.95rem; background:transparent; border:1.5px solid rgba(26,26,26,0.3); border-radius:3px 10px 3px 10px / 10px 3px 10px 3px; color:var(--pencil); cursor:pointer; }
+    .sb-logout:hover { border-color:var(--red); color:var(--red); background:var(--red-lt); }
+
+    .main { margin-left:var(--sb-w); min-height:100vh; display:flex; flex-direction:column; }
+    .topbar { position:sticky; top:0; z-index:50; background:rgba(247,244,238,0.95); backdrop-filter:blur(6px); border-bottom:1.5px dashed rgba(26,26,26,0.2); padding:0.85rem 1.75rem; display:flex; align-items:center; justify-content:space-between; }
+    .tb-title { font-size:1.5rem; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:65%; }
+    .tb-sub { font-size:0.9rem; color:var(--pencil); }
+    .sketch-btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.85rem; font-family:var(--font); font-size:0.95rem; font-weight:600; cursor:pointer; border:1.5px solid var(--ink); text-decoration:none; box-shadow:2px 2px 0 var(--shadow); transition:transform 0.1s; }
+    .btn-ink { background:var(--ink); color:var(--paper); border-radius:3px 12px 3px 12px / 12px 3px 12px 3px; }
+    .btn-ink:hover { transform:translate(-1px,-1px); }
+    .btn-ink:active { transform:translate(1px,1px); box-shadow:none; }
+    .btn-ghost { background:transparent; color:var(--ink); border-radius:10px 3px 10px 3px / 3px 10px 3px 10px; }
+    .btn-ghost:hover { background:rgba(0,0,0,0.04); }
+    .btn-green { background:var(--green); color:#fff; border:1.5px solid var(--green); border-radius:3px 12px 3px 12px / 12px 3px 12px 3px; box-shadow:2px 2px 0 var(--shadow); font-family:var(--font); font-size:0.95rem; font-weight:700; padding:0.45rem 1rem; cursor:pointer; transition:transform 0.1s; }
+    .btn-green:hover { transform:translate(-1px,-1px); }
+    .btn-green:active { transform:translate(1px,1px); box-shadow:none; }
+
+    .content { padding:1.75rem; flex:1; }
+
+    /* Module hero */
+    .hero {
+      background:var(--white); border:1.5px solid rgba(26,26,26,0.2);
+      border-radius:18px 4px 18px 4px / 4px 18px 4px 18px;
+      box-shadow:4px 5px 0 var(--shadow); margin-bottom:1.5rem; padding:1.25rem 1.5rem;
+      animation:fadeUp 0.3s ease both; position:relative;
+    }
+    .hero::before { content:''; position:absolute; top:0; left:0; bottom:0; width:4px;
+      border-radius:2px; background:{% raw %}{{ 'var(--green)' if module.completed else 'var(--amber)' }}{% endraw %}; }
+
+    .hero-tag { font-size:0.8rem; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.5rem; }
+    .hero-name { font-size:2rem; font-weight:700; margin-bottom:0.5rem; line-height:1.2; }
+    .hero-badges { display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.85rem; align-items:center; }
+    .badge { font-size:0.8rem; padding:1px 10px; border:1.5px solid; border-radius:2px 8px 2px 8px / 8px 2px 8px 2px; }
+    .badge-green  { border-color:var(--green); color:var(--green); background:var(--green-lt); }
+    .badge-amber  { border-color:var(--amber); color:var(--amber); background:var(--amber-lt); }
+    .badge-blue   { border-color:var(--blue);  color:var(--blue);  background:var(--blue-lt); }
+    .badge-red    { border-color:var(--red);   color:var(--red);   background:var(--red-lt); }
+    .badge-pencil { border-color:var(--pencil);color:var(--pencil); }
+
+    .assignee-row { display:flex; align-items:center; gap:0.75rem; padding-top:0.85rem; border-top:1.5px dashed rgba(26,26,26,0.12); }
+    .assignee-avatar { width:36px; height:36px; border:2px solid var(--ink); border-radius:3px 12px 3px 12px / 12px 3px 12px 3px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; font-weight:700; background:var(--hi); flex-shrink:0; }
+    .assignee-label { font-size:0.78rem; color:var(--pencil); letter-spacing:0.05em; }
+    .assignee-name { font-size:1rem; font-weight:700; }
+
+    /* 2 col */
+    .grid-2 { display:grid; grid-template-columns:1fr 280px; gap:1.25rem; }
+
+    /* Timeline sheet */
+    .timeline-sheet {
+      background:var(--white); border:1.5px solid rgba(26,26,26,0.2);
+      border-radius:4px 18px 4px 18px / 18px 4px 18px 4px;
+      box-shadow:4px 5px 0 var(--shadow); overflow:visible;
+      animation:fadeUp 0.3s ease 0.1s both; position:relative;
+    }
+    /* Lined paper background for timeline */
+    .timeline-sheet::before {
+      content:''; position:absolute; left:0; right:0; bottom:0; pointer-events:none;
+      top:56px; /* below header */
+      background:repeating-linear-gradient(0deg,transparent 0,transparent 31px,rgba(37,99,235,0.07) 31px,rgba(37,99,235,0.07) 32px);
+      border-radius:0 0 4px 4px;
+    }
+    .sheet-header { padding:0.85rem 1.1rem; border-bottom:1.5px dashed rgba(26,26,26,0.15); display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1; }
+    .sheet-title { font-size:1.2rem; font-weight:700; }
+    .sheet-count { font-size:0.85rem; color:var(--pencil); background:var(--paper-2); padding:1px 10px; border:1px solid rgba(0,0,0,0.1); border-radius:4px; }
+
+    .timeline { padding:1.1rem; position:relative; z-index:1; }
+    .tl-item { display:flex; gap:0.75rem; margin-bottom:1.25rem; animation:scrollIn 0.2s ease both; }
+    .tl-item:last-child { margin-bottom:0; }
+    .tl-connector { display:flex; flex-direction:column; align-items:center; flex-shrink:0; margin-top:4px; }
+    .tl-dot { width:10px; height:10px; border:2px solid var(--blue); border-radius:3px; background:var(--blue-lt); flex-shrink:0; }
+    .tl-line { width:1.5px; flex:1; margin-top:3px;
+      background:repeating-linear-gradient(180deg,var(--blue) 0,var(--blue) 4px,transparent 4px,transparent 8px); opacity:0.4; }
+    .tl-item:last-child .tl-line { display:none; }
+    .tl-date { font-size:0.78rem; color:var(--blue); letter-spacing:0.04em; margin-bottom:3px; font-weight:700; }
+    .tl-text { font-size:1rem; color:var(--pencil); line-height:1.5; background:rgba(37,99,235,0.04); border:1px dashed rgba(26,26,26,0.15); padding:0.5rem 0.75rem; border-radius:3px 10px 3px 10px / 10px 3px 10px 3px; }
+
+    .no-updates { padding:1.5rem 1.1rem; color:var(--pencil); font-size:1rem; text-align:center; position:relative; z-index:1; }
+
+    /* Add update form */
+    .add-form { border-top:1.5px dashed rgba(26,26,26,0.15); padding:0.85rem 1.1rem; background:rgba(37,99,235,0.03); border-radius:0 0 18px 4px / 0 0 4px 18px; position:relative; z-index:1; }
+    .add-form-title { font-size:0.8rem; color:var(--blue); letter-spacing:0.06em; margin-bottom:0.6rem; text-transform:uppercase; }
+    .field-sm { margin-bottom:0.75rem; }
+    .ff-lbl { font-size:0.72rem; color:var(--pencil); display:block; margin-bottom:2px; letter-spacing:0.05em; }
+    .sketch-input-sm { width:100%; padding:0.35rem 0.1rem; background:transparent; border:none; border-bottom:1.5px solid rgba(26,26,26,0.4); font-family:var(--font); font-size:1rem; color:var(--ink); outline:none; }
+    .sketch-input-sm:focus { border-bottom-color:var(--blue); }
+    .sketch-input-sm::placeholder { color:var(--pencil); opacity:0.5; }
+    textarea.sketch-input-sm { resize:vertical; min-height:70px; border:1.5px solid rgba(26,26,26,0.3); border-bottom-width:1.5px; padding:0.4rem 0.5rem; background:rgba(255,255,255,0.5); }
+    input[type="date"]::-webkit-calendar-picker-indicator { opacity:0.4; }
+    .btn-post { width:100%; padding:0.55rem; background:var(--blue); color:#fff; border:1.5px solid var(--blue); border-radius:3px 12px 3px 12px / 12px 3px 12px 3px; font-family:var(--font); font-size:1rem; font-weight:700; cursor:pointer; box-shadow:2px 2px 0 var(--shadow); transition:transform 0.1s; }
+    .btn-post:hover { transform:translate(-1px,-1px); }
+    .btn-post:active { transform:translate(1px,1px); box-shadow:none; }
+
+    /* Edit panel */
+    .edit-panel {
+      background:var(--white); border:1.5px solid rgba(26,26,26,0.2);
+      border-radius:18px 4px 18px 4px / 4px 18px 4px 18px;
+      box-shadow:4px 5px 0 var(--shadow);
+      animation:fadeUp 0.3s ease 0.15s both;
+    }
+    select.sketch-input-sm { cursor:pointer; }
+
+    @media(max-width:960px){.grid-2{grid-template-columns:1fr}}
+    @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.content{padding:1rem}}
+  </style>
 </head>
 <body>
-    <nav class="sidebar">
-        <div class="logo">FairShare.</div>
-        <a href="/project/{{ module.project_id }}" class="btn-nav">📂 Project Workspace</a>
-        <a href="/" class="btn-nav">📊 Dashboard</a>
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-name">Fairshare</div>
+      <div class="sb-logo-sub">project management</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">Navigation</div>
+      <a href="{{ url_for('home') }}" class="sb-item"><span>📋</span> Dashboard <span class="sb-item-arrow">→</span></a>
+      <a href="{{ url_for('project_modules', project_id=module.project_id) }}" class="sb-item"><span>📁</span> Back to project <span class="sb-item-arrow">→</span></a>
+      <div class="sb-section">Current</div>
+      <div class="sb-item active"><span>◻</span> {{ module.name[:18] }}{{ '…' if module.name|length > 18 else '' }} <span class="sb-item-arrow">→</span></div>
     </nav>
+    <div class="sb-footer">
+      <div class="sb-user-card">
+        <div class="sb-user-label">signed in as</div>
+        <div class="sb-user-name">{{ user_name }}</div>
+      </div>
+      <form action="{{ url_for('logout') }}" method="get" style="margin:0">
+        <button type="submit" class="sb-logout">↩ Sign out</button>
+      </form>
+    </div>
+  </aside>
 
-    <main class="content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
-            <div>
-                <h1 style="font-size: 2.5rem; margin: 0;">{{ module.name }}</h1>
-                <p style="color: #64748b; font-weight: 600; margin-top: 5px;">
-                    Lead: <span style="color: #4f46e5;">{{ member.name }}</span> | 
-                    Priority: <span style="text-transform: uppercase; font-weight: 800;">{{ module.priority }}</span>
-                </p>
-            </div>
-            
-            {% if not module.completed %}
-            <form action="/module/{{ module.id }}/complete" method="POST">
-                <button type="submit" class="btn-action" style="background: #10b981; padding: 15px 30px; font-size: 1rem;">
-                    Mark Finished ✅
-                </button>
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="tb-title">{{ module.name }}</div>
+        <div class="tb-sub">Module details</div>
+      </div>
+      <a href="{{ url_for('project_modules', project_id=module.project_id) }}" class="sketch-btn btn-ghost">← Back</a>
+    </header>
+
+    <div class="content">
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-tag" style="color:{{ 'var(--green)' if module.completed else 'var(--amber)' }}">
+          {{ '✓ Complete' if module.completed else '○ In progress' }}
+        </div>
+        <div class="hero-name">{{ module.name }}</div>
+        <div class="hero-badges">
+          {% if not module.completed %}
+            <form method="POST" action="{{ url_for('complete_module', module_id=module.id) }}" style="display:contents">
+              <button type="submit" class="btn-green">✓ Mark complete</button>
             </form>
-            {% else %}
-            <span style="background: #dcfce7; color: #15803d; padding: 10px 20px; border-radius: 12px; font-weight: 800;">🏆 TASK COMPLETED</span>
-            {% endif %}
+          {% else %}
+            <span class="badge badge-green">✓ Completed</span>
+          {% endif %}
+          <span class="badge {% if module.priority=='High' %}badge-red{% elif module.priority=='Low' %}badge-green{% else %}badge-amber{% endif %}">
+            {{ module.priority }} priority
+          </span>
+          <span class="badge badge-pencil">{{ updates|length }} update{{ 's' if updates|length != 1 else '' }}</span>
         </div>
 
-        <div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 30px;">
-            
-            <div class="card" style="background: white; border: 2px solid #e2e8f0;">
-                <h3 style="margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;">🕒 Activity Timeline</h3>
-                
-                {% for update in updates %}
-                <div style="border-left: 3px solid #4f46e5; padding-left: 20px; margin-bottom: 20px; position: relative;">
-                    <div style="width: 12px; height: 12px; background: #4f46e5; border-radius: 50%; position: absolute; left: -8px; top: 5px;"></div>
-                    <small style="color: #64748b; font-weight: 800; display: block;">{{ update.update_date }}</small>
-                    <p style="margin: 5px 0 0 0; color: #1e293b; font-weight: 500;">{{ update.update_text }}</p>
-                </div>
-                {% else %}
-                <p style="color: #94a3b8; font-style: italic; text-align: center; padding: 20px;">No updates yet. Time to get to work!</p>
-                {% endfor %}
+        <div class="assignee-row">
+          {% if member %}
+            <div class="assignee-avatar">{{ member.name[0].upper() }}</div>
+            <div>
+              <div class="assignee-label">Assigned to</div>
+              <div class="assignee-name">{{ member.name }}</div>
             </div>
-
-            <div style="display: flex; flex-direction: column; gap: 30px;">
-                
-                <div class="card" style="background: white; border: 2px solid #e2e8f0;">
-                    <h3 style="margin-top: 0;">Post New Update</h3>
-                    <form action="/module/{{ module.id }}/add_update" method="POST">
-                        <label style="font-size: 0.75rem; font-weight: 800; color: #64748b;">DATE</label>
-                        <input type="date" name="update_date" required>
-                        
-                        <label style="font-size: 0.75rem; font-weight: 800; color: #64748b; margin-top: 15px; display: block;">NOTES</label>
-                        <textarea name="update_text" placeholder="What was achieved today?" required style="height: 100px; resize: none;"></textarea>
-                        
-                        <button type="submit" class="btn-action" style="width: 100%; margin-top: 15px;">Add to Log</button>
-                    </form>
-                </div>
-
-                <div class="card" style="background: #f8fafc; border: 2px solid #cbd5e1;">
-                    <h3 style="margin-top: 0;">✏️ Edit Task Info</h3>
-                    <form action="/module/{{ module.id }}/edit" method="POST">
-                        <label style="font-size: 0.75rem; font-weight: 800; color: #64748b;">RENAME</label>
-                        <input type="text" name="module_name" value="{{ module.name }}" required>
-
-                        <label style="font-size: 0.75rem; font-weight: 800; color: #64748b; margin-top: 15px; display: block;">REASSIGN</label>
-                        <select name="assigned_member" required>
-                            {% for m_option in all_members %}
-                                <option value="{{ m_option.id }}" {% if m_option.id == module.assigned_member_id %}selected{% endif %}>
-                                    {{ m_option.name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-
-                        <label style="font-size: 0.75rem; font-weight: 800; color: #64748b; margin-top: 15px; display: block;">PRIORITY</label>
-                        <select name="priority" required>
-                            <option value="Low" {% if module.priority == 'Low' %}selected{% endif %}>Low 🟢</option>
-                            <option value="Medium" {% if module.priority == 'Medium' %}selected{% endif %}>Medium 🟡</option>
-                            <option value="High" {% if module.priority == 'High' %}selected{% endif %}>High 🔴</option>
-                        </select>
-
-                        <button type="submit" class="btn-action" style="width: 100%; margin-top: 20px; background: #1e293b;">
-                            Save Changes
-                        </button>
-                    </form>
-                </div>
-
+          {% else %}
+            <div class="assignee-avatar" style="background:var(--paper-2);color:var(--pencil)">?</div>
+            <div>
+              <div class="assignee-label">Assigned to</div>
+              <div class="assignee-name" style="color:var(--pencil)">Unassigned</div>
             </div>
+          {% endif %}
         </div>
-    </main>
+      </div>
+
+      <div class="grid-2">
+        <!-- Timeline -->
+        <div class="timeline-sheet">
+          <div class="sheet-header">
+            <div class="sheet-title">Progress log</div>
+            <span class="sheet-count">{{ updates|length }} entries</span>
+          </div>
+
+          {% if updates %}
+            <div class="timeline">
+              {% for update in updates %}
+                <div class="tl-item" style="animation-delay:{{ loop.index * 0.06 }}s">
+                  <div class="tl-connector">
+                    <div class="tl-dot"></div>
+                    <div class="tl-line"></div>
+                  </div>
+                  <div style="flex:1">
+                    <div class="tl-date">{{ update.update_date }}</div>
+                    <div class="tl-text">{{ update.update_text }}</div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="no-updates">No entries yet.<br>Log the first update below.</div>
+          {% endif %}
+
+          <div class="add-form">
+            <div class="add-form-title">+ Add entry</div>
+            <form method="POST" action="{{ url_for('add_update', module_id=module.id) }}">
+              <div class="field-sm">
+                <label class="ff-lbl">Date</label>
+                <input type="date" name="update_date" class="sketch-input-sm" id="upDate" required/>
+              </div>
+              <div class="field-sm">
+                <label class="ff-lbl">Notes</label>
+                <textarea name="update_text" class="sketch-input-sm" placeholder="Describe progress..." required></textarea>
+              </div>
+              <button type="submit" class="btn-post">→ Post entry</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Edit -->
+        <div>
+          <div class="edit-panel">
+            <div class="sheet-header">
+              <div class="sheet-title">Edit module</div>
+            </div>
+            <div class="add-form" style="border-top:none;border-radius:0 0 18px 4px / 0 0 4px 18px">
+              <form method="POST" action="{{ url_for('edit_module', module_id=module.id) }}">
+                <div class="field-sm">
+                  <label class="ff-lbl">Name</label>
+                  <input type="text" name="module_name" class="sketch-input-sm" value="{{ module.name }}" required/>
+                </div>
+                <div class="field-sm">
+                  <label class="ff-lbl">Assign to</label>
+                  <select name="assigned_member" class="sketch-input-sm">
+                    <option value="">Unassigned</option>
+                    {% for m in all_members %}
+                      <option value="{{ m.id }}" {{ 'selected' if m.id == module.assigned_member_id else '' }}>{{ m.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="field-sm">
+                  <label class="ff-lbl">Priority</label>
+                  <select name="priority" class="sketch-input-sm">
+                    <option value="High"   {{ 'selected' if module.priority=='High'   else '' }}>High</option>
+                    <option value="Medium" {{ 'selected' if module.priority=='Medium' else '' }}>Medium</option>
+                    <option value="Low"    {{ 'selected' if module.priority=='Low'    else '' }}>Low</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn-post" style="background:var(--ink);border-color:var(--ink)">→ Save changes</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('upDate').value = new Date().toISOString().split('T')[0];
+  </script>
 </body>
 </html>

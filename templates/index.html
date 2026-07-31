@@ -1,110 +1,352 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FairShare | Workspace Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fairshare — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root {
+      --paper:#f7f4ee; --paper-2:#f0ece0; --white:#fffdf9;
+      --ink:#1a1a1a; --pencil:#8a8070; --blue:#2563eb; --blue-lt:rgba(37,99,235,0.1);
+      --green:#15803d; --green-lt:rgba(21,128,61,0.1);
+      --amber:#b45309; --amber-lt:rgba(180,83,9,0.1);
+      --red:#dc2626; --red-lt:rgba(220,38,38,0.08);
+      --hi:rgba(251,191,36,0.4); --shadow:rgba(30,27,20,0.1);
+      --sb-w:230px; --font:'Caveat', cursive;
+    }
+    html, body { height:100%; font-family:var(--font); background-color:var(--paper);
+      background-image:linear-gradient(rgba(0,0,100,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,100,0.02) 1px,transparent 1px);
+      background-size:28px 28px; color:var(--ink); }
+
+    @keyframes fadeUp   { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes drawLine { from{width:0} to{width:100%} }
+    @keyframes hatchIn  { from{width:0} to{width:var(--hw)} }
+    @keyframes sway     { 0%,100%{transform:rotate(var(--r,0deg))} 50%{transform:rotate(calc(var(--r,0deg) + 0.6deg))} }
+    @keyframes underlineGrow { from{width:0} to{width:100%} }
+    @keyframes wobble { 0%,100%{transform:rotate(-0.3deg)} 50%{transform:rotate(0.3deg)} }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position:fixed; left:0; top:0; bottom:0; width:var(--sb-w);
+      background:var(--paper-2);
+      border-right:2px dashed rgba(26,26,26,0.25);
+      display:flex; flex-direction:column; z-index:100;
+    }
+
+    .sb-logo {
+      padding:1.5rem 1.25rem 1rem;
+      border-bottom:1.5px solid rgba(26,26,26,0.15);
+    }
+    .sb-logo-name {
+      font-size:1.8rem; font-weight:700; letter-spacing:-0.02em;
+      position:relative; display:inline-block;
+    }
+    .sb-logo-name::after {
+      content:''; position:absolute; bottom:0; left:0; height:2.5px;
+      background:var(--ink); border-radius:2px;
+      animation:drawLine 0.5s ease 0.2s both;
+    }
+    .sb-logo-sub { font-size:0.85rem; color:var(--pencil); margin-top:2px; }
+
+    .sb-nav { flex:1; padding:1rem 0.75rem; overflow-y:auto; }
+    .sb-section { font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase;
+      color:var(--pencil); margin:1rem 0 0.4rem 0.4rem; }
+
+    .sb-item {
+      display:flex; align-items:center; gap:0.5rem;
+      padding:0.45rem 0.6rem; margin-bottom:2px; font-size:1.1rem;
+      color:var(--pencil); text-decoration:none; border-radius:3px;
+      position:relative; transition:color 0.1s;
+    }
+    .sb-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:transparent; }
+    .sb-item:hover { color:var(--ink); background:rgba(0,0,0,0.04); }
+    .sb-item.active {
+      color:var(--ink); font-weight:700;
+      background:var(--hi);
+      border-radius:3px 10px 3px 10px / 10px 3px 10px 3px;
+    }
+    .sb-item.active::before { background:var(--ink); border-radius:2px; }
+    .sb-item-icon { font-size:1rem; opacity:0.7; }
+    .sb-item-arrow { margin-left:auto; opacity:0; transition:opacity 0.1s; font-size:0.9rem; }
+    .sb-item:hover .sb-item-arrow, .sb-item.active .sb-item-arrow { opacity:1; }
+
+    .sb-footer {
+      padding:0.85rem; border-top:1.5px dashed rgba(26,26,26,0.2);
+    }
+    .sb-user-card {
+      background:var(--white); border:1.5px solid rgba(26,26,26,0.2);
+      border-radius:4px 12px 4px 12px / 12px 4px 12px 4px;
+      padding:0.6rem 0.75rem; margin-bottom:0.6rem;
+    }
+    .sb-user-name { font-size:1rem; font-weight:700; }
+    .sb-user-label { font-size:0.75rem; color:var(--pencil); }
+
+    .sb-logout {
+      width:100%; padding:0.45rem; font-family:var(--font); font-size:0.95rem;
+      background:transparent; border:1.5px solid rgba(26,26,26,0.3);
+      border-radius:3px 10px 3px 10px / 10px 3px 10px 3px;
+      color:var(--pencil); cursor:pointer; transition:all 0.1s;
+    }
+    .sb-logout:hover { border-color:var(--red); color:var(--red); background:var(--red-lt); }
+
+    /* ── Main ── */
+    .main { margin-left:var(--sb-w); min-height:100vh; display:flex; flex-direction:column; }
+
+    .topbar {
+      position:sticky; top:0; z-index:50;
+      background:rgba(247,244,238,0.95); backdrop-filter:blur(6px);
+      border-bottom:1.5px dashed rgba(26,26,26,0.2);
+      padding:0.85rem 1.75rem; display:flex; align-items:center; justify-content:space-between;
+    }
+    .tb-title { font-size:1.6rem; font-weight:700; letter-spacing:-0.01em; }
+    .tb-sub { font-size:0.9rem; color:var(--pencil); }
+
+    .sketch-btn {
+      display:inline-flex; align-items:center; gap:0.4rem;
+      padding:0.5rem 1rem; font-family:var(--font); font-size:1rem; font-weight:700;
+      cursor:pointer; border:2px solid var(--ink); text-decoration:none;
+      transition:transform 0.1s, box-shadow 0.1s;
+    }
+    .btn-ink { background:var(--ink); color:var(--paper); border-radius:3px 14px 3px 14px / 14px 3px 14px 3px;
+      box-shadow:3px 3px 0 var(--shadow); }
+    .btn-ink:hover { transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--shadow); }
+    .btn-ink:active { transform:translate(1px,1px); box-shadow:1px 1px 0 var(--shadow); }
+    .btn-ghost { background:transparent; color:var(--ink); border-radius:12px 3px 12px 3px / 3px 12px 3px 12px;
+      box-shadow:2px 2px 0 var(--shadow); }
+    .btn-ghost:hover { background:rgba(0,0,0,0.04); }
+
+    .content { padding:1.75rem; flex:1; }
+
+    /* ── Stats row ── */
+    .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:2rem; }
+    .stat-card {
+      background:var(--white); border:1.5px solid rgba(26,26,26,0.2);
+      padding:1rem 1.1rem; position:relative; overflow:hidden;
+      box-shadow:3px 3px 0 var(--shadow);
+      animation:fadeUp 0.3s ease both;
+    }
+    .stat-card:nth-child(1) { border-radius:4px 16px 4px 16px / 16px 4px 16px 4px; --r:-0.4deg; animation:fadeUp 0.3s ease 0.05s both, sway 7s ease-in-out infinite; }
+    .stat-card:nth-child(2) { border-radius:16px 4px 16px 4px / 4px 16px 4px 16px; --r:0.3deg;  animation:fadeUp 0.3s ease 0.1s  both, sway 8s ease-in-out 1s infinite; }
+    .stat-card:nth-child(3) { border-radius:4px 16px 4px 16px / 16px 4px 16px 4px; --r:-0.5deg; animation:fadeUp 0.3s ease 0.15s both, sway 6s ease-in-out 2s infinite; }
+    .stat-card:nth-child(4) { border-radius:16px 4px 16px 4px / 4px 16px 4px 16px; --r:0.4deg;  animation:fadeUp 0.3s ease 0.2s  both, sway 7s ease-in-out 3s infinite; }
+
+    .stat-accent { position:absolute; top:0; left:0; right:0; height:3px; }
+    .stat-val { font-size:2.4rem; font-weight:700; line-height:1; margin-bottom:0.2rem; }
+    .stat-lbl { font-size:0.85rem; color:var(--pencil); letter-spacing:0.04em; }
+    .stat-note { position:absolute; bottom:0.5rem; right:0.75rem; font-size:0.75rem; color:var(--pencil); opacity:0.5; transform:rotate(1.5deg); }
+
+    /* ── Section ── */
+    .section-hdr { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:1.25rem; }
+    .section-title {
+      font-size:1.5rem; font-weight:700; letter-spacing:-0.01em;
+      position:relative; display:inline-block; padding-bottom:3px;
+    }
+    .section-title::after { content:''; position:absolute; bottom:0; left:0; height:2px;
+      background:var(--ink); border-radius:1px; animation:drawLine 0.5s ease 0.4s both; }
+    .section-count { font-size:0.9rem; color:var(--pencil); }
+
+    /* ── Project cards (index cards) ── */
+    .projects-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:1.25rem; }
+
+    .project-card {
+      background:var(--white); border:1.5px solid rgba(26,26,26,0.25);
+      box-shadow:4px 5px 0 var(--shadow);
+      position:relative; overflow:visible;
+      transition:transform 0.15s, box-shadow 0.15s;
+      animation:fadeUp 0.3s ease both;
+    }
+    /* Alternate rotations for hand-placed feel */
+    .project-card:nth-child(odd)  { border-radius:4px 18px 4px 18px / 18px 4px 18px 4px; transform:rotate(-0.4deg); }
+    .project-card:nth-child(even) { border-radius:18px 4px 18px 4px / 4px 18px 4px 18px; transform:rotate(0.35deg); }
+    .project-card:hover { transform:rotate(0deg) translateY(-3px); box-shadow:5px 8px 0 var(--shadow); }
+
+    /* Index card ruled line at top */
+    .card-rule { height:3px; width:100%; }
+
+    .card-body { padding:1.1rem; }
+    .card-tag {
+      display:inline-block; font-size:0.75rem; padding:1px 10px;
+      border:1.5px solid; border-radius:2px 8px 2px 8px / 8px 2px 8px 2px;
+      margin-bottom:0.6rem; letter-spacing:0.03em;
+    }
+    .tag-red    { border-color:var(--red);   color:var(--red);   background:var(--red-lt); }
+    .tag-amber  { border-color:var(--amber); color:var(--amber); background:var(--amber-lt); }
+    .tag-green  { border-color:var(--green); color:var(--green); background:var(--green-lt); }
+    .tag-pencil { border-color:var(--pencil);color:var(--pencil); }
+
+    .card-name { font-size:1.35rem; font-weight:700; margin-bottom:0.25rem; line-height:1.2; }
+    .card-date { font-size:0.9rem; color:var(--pencil); margin-bottom:1rem; }
+    .card-date::before { content:'📅 '; }
+
+    /* Hatch progress bar */
+    .prog-label { display:flex; justify-content:space-between; font-size:0.85rem; color:var(--pencil); margin-bottom:3px; }
+    .prog-bar { height:12px; background:rgba(0,0,0,0.06); border:1.5px solid var(--pencil); border-radius:1px 6px 1px 6px / 6px 1px 6px 1px; overflow:hidden; }
+    .prog-fill { height:100%; --hw:0%; width:var(--hw); transition:width 0.8s ease; }
+    .hatch-blue  { background:repeating-linear-gradient(-45deg,var(--blue)  0,var(--blue)  5px,var(--blue-lt)  5px,var(--blue-lt)  9px); }
+    .hatch-green { background:repeating-linear-gradient(-45deg,var(--green) 0,var(--green) 5px,var(--green-lt) 5px,var(--green-lt) 9px); }
+    .hatch-amber { background:repeating-linear-gradient(-45deg,var(--amber) 0,var(--amber) 5px,var(--amber-lt) 5px,var(--amber-lt) 9px); }
+    .hatch-red   { background:repeating-linear-gradient(-45deg,var(--red)   0,var(--red)   5px,var(--red-lt)   5px,var(--red-lt)   9px); }
+
+    .card-actions { display:flex; gap:0.4rem; margin-top:1rem; padding-top:0.75rem;
+      border-top:1.5px dashed rgba(26,26,26,0.15); }
+    .card-act {
+      flex:1; padding:0.4rem 0.2rem; font-family:var(--font); font-size:0.95rem;
+      cursor:pointer; border:1.5px solid rgba(26,26,26,0.25); background:transparent;
+      text-decoration:none; color:var(--ink); text-align:center; display:block;
+      border-radius:3px 8px 3px 8px / 8px 3px 8px 3px;
+      transition:all 0.1s; box-shadow:2px 2px 0 var(--shadow);
+    }
+    .card-act:hover { background:var(--paper-2); transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--shadow); }
+    .card-act.danger { border-color:rgba(220,38,38,0.3); color:var(--red); }
+    .card-act.danger:hover { background:var(--red-lt); }
+
+    /* Corner annotation */
+    .card-note { position:absolute; top:-10px; right:12px; font-size:0.72rem; color:var(--pencil);
+      background:var(--paper-2); padding:0 6px; border:1px solid rgba(0,0,0,0.15); transform:rotate(1deg); }
+
+    /* Empty state */
+    .empty-state { text-align:center; padding:4rem 2rem; border:2px dashed rgba(26,26,26,0.2);
+      border-radius:8px 24px 8px 24px / 24px 8px 24px 8px; }
+    .empty-icon { font-size:3rem; margin-bottom:1rem; display:block; }
+    .empty-title { font-size:1.3rem; color:var(--pencil); margin-bottom:1.25rem; line-height:1.6; }
+
+    @media(max-width:960px){.stats-row{grid-template-columns:1fr 1fr}}
+    @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.content{padding:1rem}}
+  </style>
 </head>
 <body>
 
-    <nav class="sidebar">
-        <div class="logo">FairShare.</div>
-        
-        <a href="/" class="btn-nav active">
-            <span>📊</span> Dashboard
-        </a>
-        <a href="/create" class="btn-nav">
-            <span>✨</span> New Project
-        </a>
-        
-        <div style="margin-top: auto; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px;">
-            <p style="font-size: 0.75rem; margin: 0; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px;">Status</p>
-            <p style="font-size: 0.9rem; font-weight: 700; margin: 5px 0 0 0; color: #4ade80;">System Active 🟢</p>
-        </div>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-name">Fairshare</div>
+      <div class="sb-logo-sub">project management</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">Navigation</div>
+      <a href="{{ url_for('home') }}" class="sb-item active">
+        <span class="sb-item-icon">📋</span> Dashboard
+        <span class="sb-item-arrow">→</span>
+      </a>
+      <a href="{{ url_for('create') }}" class="sb-item">
+        <span class="sb-item-icon">＋</span> New Project
+        <span class="sb-item-arrow">→</span>
+      </a>
     </nav>
+    <div class="sb-footer">
+      <div class="sb-user-card">
+        <div class="sb-user-label">signed in as</div>
+        <div class="sb-user-name">{{ user_name }}</div>
+      </div>
+      <form action="{{ url_for('logout') }}" method="get" style="margin:0">
+        <button type="submit" class="sb-logout">↩ Sign out</button>
+      </form>
+    </div>
+  </aside>
 
-    <main class="content">
-        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 50px;">
-            <div>
-                <h1 style="font-size: 2.5rem; font-weight: 800; margin: 0;">Projects Overview</h1>
-                <p style="color: #64748b; margin-top: 5px;">Track deadlines and team progress at a glance.</p>
-            </div>
-            <a href="/create" class="btn-action">+ Create Project</a>
-        </header>
-<div style="margin-bottom: 30px;">
-    <input type="text" id="projectSearch" placeholder="🔍 Search projects..." 
-           style="width: 100%; max-width: 400px; padding: 12px 20px; border-radius: 12px; border: 2px solid #e2e8f0;"
-           onkeyup="searchProjects()">
-</div>
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="tb-title">Dashboard</div>
+        <div class="tb-sub">Welcome back, {{ user_name }}</div>
+      </div>
+      <a href="{{ url_for('create') }}" class="sketch-btn btn-ink">＋ New Project</a>
+    </header>
 
-<script>
-function searchProjects() {
-    let input = document.getElementById('projectSearch').value.toLowerCase();
-    let cards = document.getElementsByClassName('card');
-    
-    for (let i = 0; i < cards.length; i++) {
-        let title = cards[i].getElementsByTagName('h2')[0].innerText.toLowerCase();
-        cards[i].style.display = title.includes(input) ? "" : "none";
-    }
-}
-</script>
-        <div class="grid">
-            {% for project in projects %}
-            <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    
-                    <div style="display: flex; gap: 8px;">
-                        {% if project['progress'] == 100 %}
-                            <span style="background: #dcfce7; color: #15803d; padding: 5px 10px; border-radius: 8px; font-weight: 800; font-size: 0.7rem;">🏆 FINISHED</span>
-                        {% elif project['days_left'] == "Overdue" %}
-                            <span style="background: #fee2e2; color: #ef4444; padding: 5px 10px; border-radius: 8px; font-weight: 800; font-size: 0.7rem;">⚠️ OVERDUE</span>
-                        {% else %}
-                            <span style="background: #f1f5f9; color: #475569; padding: 5px 10px; border-radius: 8px; font-weight: 700; font-size: 0.7rem;">⏳ {{ project['days_left'] }}</span>
-                        {% endif %}
-                    </div>
+    <div class="content">
+      <!-- Stats -->
+      {% set total = projects|length %}
+      {% set done  = projects|selectattr('progress','equalto',100)|list|length %}
+      {% set avg   = (projects|sum(attribute='progress')/total)|int if total>0 else 0 %}
+      {% set urgent= projects|selectattr('urgency','equalto','high')|list|length %}
 
-                    <form action="/project/{{ project['id'] }}/delete" method="POST" style="display: inline;">
-                        <button type="submit" 
-                                style="background:none; border:none; cursor:pointer; font-size: 1.1rem; opacity: 0.4;" 
-                                onclick="return confirm('Delete this project?');">
-                            🗑️
-                        </button>
-                    </form>
-                </div>
-
-                <div>
-                    <h2 style="margin: 0 0 5px 0; font-size: 1.5rem; letter-spacing: -0.5px;">{{ project['name'] }}</h2>
-                    <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 12px; font-weight: 600;">
-                        Deadline: <span style="color: #1e293b;">{{ project['deadline'] }}</span>
-                    </p>
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="font-size: 0.8rem; font-weight: 700; color: #64748b;">Progress</span>
-                        <span style="font-size: 0.8rem; font-weight: 800; color: #4f46e5;">{{ project['progress'] }}%</span>
-                    </div>
-                    
-                    <div class="progress-container" style="margin-bottom: 25px; height: 10px;">
-                        <div class="progress-bar" style="width: {{ project['progress'] }}%;"></div>
-                    </div>
-                </div>
-
-                <div style="width: 100%;">
-                    <a href="/project/{{ project['id'] }}" class="btn-action" style="width: 100%; display: block; box-sizing: border-box; text-decoration: none; font-size: 0.9rem;">
-                        Open Workspace →
-                    </a>
-                </div>
-            </div>
-            {% else %}
-            <div style="grid-column: 1 / -1; text-align: center; padding: 60px; background: white; border-radius: 20px; border: 2px dashed #e2e8f0;">
-                <p style="font-size: 3rem; margin: 0;">📁</p>
-                <h3 style="color: #64748b;">No projects found.</h3>
-                <a href="/create" class="btn-action" style="display: inline-block; margin-top: 15px;">Start Your First Project</a>
-            </div>
-            {% endfor %}
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-accent" style="background:var(--blue)"></div>
+          <div class="stat-val" style="color:var(--blue)">{{ total }}</div>
+          <div class="stat-lbl">Total projects</div>
+          <div class="stat-note">fig. A</div>
         </div>
-    </main>
+        <div class="stat-card">
+          <div class="stat-accent" style="background:var(--green)"></div>
+          <div class="stat-val" style="color:var(--green)">{{ done }}</div>
+          <div class="stat-lbl">Completed</div>
+          <div class="stat-note">fig. B</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-accent" style="background:var(--amber)"></div>
+          <div class="stat-val" style="color:var(--amber)">{{ avg }}%</div>
+          <div class="stat-lbl">Avg. progress</div>
+          <div class="stat-note">fig. C</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-accent" style="background:var(--red)"></div>
+          <div class="stat-val" style="color:var(--red)">{{ urgent }}</div>
+          <div class="stat-lbl">Urgent</div>
+          <div class="stat-note">fig. D</div>
+        </div>
+      </div>
 
+      <!-- Projects -->
+      <div class="section-hdr">
+        <div class="section-title">Projects</div>
+        <span class="section-count">{{ total }} total</span>
+      </div>
+
+      {% if projects %}
+        <div class="projects-grid">
+          {% for project in projects %}
+            <div class="project-card" style="animation-delay:{{ loop.index * 0.06 }}s">
+              <div class="card-rule" style="background:{% if project.progress==100 %}var(--green){% elif project.urgency=='high' %}var(--red){% else %}var(--blue){% endif %}"></div>
+              <span class="card-note">#{{ '%03d' % project.id }}</span>
+              <div class="card-body">
+                <div class="card-tag {% if project.urgency=='high' %}tag-red{% elif project.urgency=='none' %}tag-pencil{% else %}tag-green{% endif %}">
+                  {{ project.days_left }}
+                </div>
+                <div class="card-name">{{ project.name }}</div>
+                <div class="card-date">{{ project.deadline if project.deadline else 'No deadline set' }}</div>
+
+                <div class="prog-label">
+                  <span>Progress</span>
+                  <span style="font-weight:700;color:{% if project.progress==100 %}var(--green){% elif project.progress>=50 %}var(--blue){% elif project.progress>0 %}var(--amber){% else %}var(--pencil){% endif %}">{{ project.progress }}%</span>
+                </div>
+                <div class="prog-bar">
+                  <div class="prog-fill {% if project.progress==100 %}hatch-green{% elif project.progress>=50 %}hatch-blue{% elif project.progress>0 %}hatch-amber{% else %}hatch-red{% endif %}"
+                       data-target="{{ project.progress }}%"></div>
+                </div>
+
+                <div class="card-actions">
+                  <a href="{{ url_for('project_modules', project_id=project.id) }}" class="card-act">↗ Open</a>
+                  <a href="{{ url_for('project_report', project_id=project.id) }}" class="card-act">📊 Report</a>
+                  <form action="{{ url_for('delete_project', project_id=project.id) }}" method="POST" style="flex:1;display:contents" onsubmit="return confirm('Delete {{ project.name }}?')">
+                    <button type="submit" class="card-act danger">✕ Delete</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <span class="empty-icon">📂</span>
+          <div class="empty-title">No projects yet.<br>Start by creating your first one.</div>
+          <a href="{{ url_for('create') }}" class="sketch-btn btn-ink" style="display:inline-flex">＋ Create project</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.querySelectorAll('.prog-fill').forEach(el => {
+          el.style.setProperty('--hw', el.dataset.target);
+        });
+      }, 300);
+    });
+  </script>
 </body>
 </html>
