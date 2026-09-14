@@ -1,159 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Fairshare — Create Account</title>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signup - FairShare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
     :root {
-      --paper:#f7f4ee; --paper-2:#f0ece0; --white:#fffdf9;
-      --ink:#1a1a1a; --pencil:#8a8070; --blue:#2563eb; --blue-lt:rgba(37,99,235,0.1);
-      --green:#15803d; --green-lt:rgba(21,128,61,0.1);
-      --amber:#b45309; --red:#dc2626; --red-lt:rgba(220,38,38,0.08);
-      --hi:rgba(251,191,36,0.38); --shadow:rgba(30,27,20,0.11);
-      --font:'Caveat', cursive;
+      --bg:#12111f; --bg2:#1a1929; --panel:#1e1d30; --panel2:#252340;
+      --coral:#e07055; --teal:#4ec9b0; --amber:#e8c547; --sky:#74a9e8;
+      --rose:#d45f7a; --mint:#6bbf8e;
+      --white:#e8e6f0; --dim:#3d3b56; --dim2:#5a587a;
+      --text:#c8c6dc; --text2:#908eaa;
+      --shadow:4px 4px 0 #0a0916; --shadow-s:2px 2px 0 #0a0916;
     }
-    html, body { min-height:100vh; font-family:var(--font); background-color:var(--paper);
-      background-image:linear-gradient(rgba(0,0,100,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,100,0.02) 1px,transparent 1px);
-      background-size:28px 28px; color:var(--ink); }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Press Start 2P', monospace; font-size: 12px;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; justify-content: center; align-items: center;
+      overflow-x: hidden;
+      background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 8px 8px;
+    }
 
-    @keyframes inkIn  { from{opacity:0;transform:scale(0.96) rotate(-1deg)} to{opacity:1;transform:scale(1) rotate(0)} }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes drawLine { from{width:0} to{width:100%} }
-    @keyframes wobble { 0%,100%{transform:rotate(-0.4deg)} 50%{transform:rotate(0.4deg)} }
-    @keyframes stretchIn { from{width:0%} to{width:var(--str-w)} }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pixelFloat {
+      0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); }
+    }
 
-    .page { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:2rem; position:relative; }
-    .corner-deco { position:absolute; font-family:var(--font); color:var(--pencil); font-size:1.2rem; opacity:0.4; pointer-events:none; animation:wobble 6s ease-in-out infinite; }
-    .cd-tl{top:1.5rem;left:1.5rem;transform:rotate(-15deg)} .cd-tr{top:1.5rem;right:1.5rem;transform:rotate(12deg)}
-    .cd-bl{bottom:1.5rem;left:1.5rem;transform:rotate(8deg)} .cd-br{bottom:1.5rem;right:1.5rem;transform:rotate(-10deg)}
+    .star { position: fixed; font-size: 10px; color: var(--dim2); pointer-events: none; animation: pixelFloat var(--d, 3s) ease-in-out infinite; animation-delay: var(--delay, 0s); }
 
-    .sketch-panel { width:100%; max-width:420px; background:var(--white); border:2px solid var(--ink);
-      border-radius:18px 4px 18px 4px / 4px 18px 4px 18px;
-      box-shadow:5px 6px 0 var(--shadow), 2px 2px 0 rgba(0,0,0,0.04);
-      padding:2.5rem 2rem 2rem; animation:inkIn 0.4s ease both; position:relative; }
-    .panel-tag { position:absolute; top:-14px; right:20px; background:var(--green); color:#fff;
-      font-size:0.8rem; padding:1px 10px; border:1.5px solid var(--ink);
-      border-radius:10px 2px 10px 2px / 2px 10px 2px 10px; }
+    .main-content { display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 2rem; width: 100%; }
 
-    .logo-area { text-align:center; margin-bottom:1.5rem; }
-    .logo-wordmark { font-size:2.5rem; font-weight:700; letter-spacing:-0.02em; position:relative; display:inline-block; }
-    .logo-wordmark::after { content:''; position:absolute; bottom:0; left:0; height:3px; background:var(--ink); border-radius:2px; animation:drawLine 0.6s ease 0.3s both; }
-    .logo-sub { font-size:0.9rem; color:var(--pencil); margin-top:0.2rem; }
+    .px-panel {
+      background: var(--panel); padding: 2.6rem 2.2rem;
+      width: 100%; max-width: 460px;
+      border: 2px solid var(--dim); box-shadow: var(--shadow);
+      animation: fadeSlideUp 0.35s ease-out; position: relative;
+    }
+    .px-panel::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 4px; background: var(--teal);
+    }
 
-    /* XP / strength gauge */
-    .strength-row { margin-top:0.4rem; }
-    .str-label { font-size:0.8rem; color:var(--pencil); margin-bottom:3px; }
-    .str-track { height:10px; background:rgba(0,0,0,0.06); border:1.5px solid var(--pencil); border-radius:2px 8px 2px 8px / 8px 2px 8px 2px; overflow:hidden; }
-    .str-fill { height:100%; --str-w:0%; width:var(--str-w);
-      background:repeating-linear-gradient(-45deg,var(--green) 0,var(--green) 4px,rgba(21,128,61,0.25) 4px,rgba(21,128,61,0.25) 8px);
-      transition:width 0.2s ease, background 0.2s; }
-    .str-fill.weak { background:repeating-linear-gradient(-45deg,var(--red) 0,var(--red) 4px,rgba(220,38,38,0.25) 4px,rgba(220,38,38,0.25) 8px); }
-    .str-fill.mid  { background:repeating-linear-gradient(-45deg,var(--amber) 0,var(--amber) 4px,rgba(180,83,9,0.25) 4px,rgba(180,83,9,0.25) 8px); }
-    .str-txt { font-size:0.8rem; color:var(--pencil); margin-top:2px; }
+    .page-title { font-size: 16px; text-align: center; margin-bottom: 1.8rem; color: var(--white); }
+    .page-title span { color: var(--teal); }
 
-    .flash { margin-bottom:1rem; padding:0.55rem 0.8rem; font-size:1rem; border:1.5px solid;
-      border-radius:2px 10px 2px 10px / 10px 2px 10px 2px; }
-    .flash-error { border-color:var(--red); background:var(--red-lt); color:var(--red); }
-    .flash-error::before { content:'⚠ '; }
+    .form-group { margin-bottom: 1.3rem; }
+    .form-label { display: block; font-size: 9px; letter-spacing: 1px; margin-bottom: 0.5rem; color: var(--dim2); text-transform: uppercase; }
 
-    .field { margin-bottom:1.35rem; position:relative; }
-    .field-label { display:block; font-size:0.85rem; color:var(--pencil); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:0.25rem; }
-    .field-label::before { content:'— '; }
-    .sketch-input { width:100%; padding:0.5rem 0.1rem; background:transparent; border:none; border-bottom:2px solid var(--ink);
-      font-family:var(--font); font-size:1.15rem; color:var(--ink); outline:none; transition:border-color 0.15s; }
-    .sketch-input:focus { border-bottom-color:var(--blue); }
-    .sketch-input::placeholder { color:var(--pencil); opacity:0.6; }
-    .field::after { content:''; position:absolute; bottom:0; left:0; height:2px; width:0; background:var(--blue); transition:width 0.2s ease; }
-    .field:focus-within::after { width:100%; }
+    .px-input {
+      width: 100%; padding: 10px 12px;
+      background: var(--bg2); border: 2px solid var(--dim);
+      color: var(--text); font-family: 'Press Start 2P', monospace;
+      font-size: 10px; outline: none; box-shadow: var(--shadow-s);
+    }
+    .px-input:focus { border-color: var(--teal); }
+    .px-input::placeholder { color: var(--dim2); }
 
-    .sketch-btn { width:100%; padding:0.7rem 1rem; background:var(--ink); color:var(--paper);
-      border:2px solid var(--ink); border-radius:14px 3px 14px 3px / 3px 14px 3px 14px;
-      font-family:var(--font); font-size:1.2rem; font-weight:700; letter-spacing:0.04em;
-      cursor:pointer; text-align:center; display:block; text-decoration:none;
-      box-shadow:3px 4px 0 var(--shadow); transition:transform 0.1s,box-shadow 0.1s; margin-top:0.5rem; }
-    .sketch-btn:hover { transform:translate(-1px,-1px); box-shadow:4px 5px 0 var(--shadow); }
-    .sketch-btn:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--shadow); }
+    .strength-meter { height: 9px; background: var(--bg2); border: 1px solid var(--dim); margin-top: 0.5rem; overflow: hidden; }
+    .strength-fill { height: 100%; width: 0%; background: var(--rose); transition: width 0.15s step-end, background 0.15s step-end; }
+    .strength-label { font-size: 8px; color: var(--dim2); margin-top: 0.4rem; text-align: right; }
 
-    .divider { display:flex; align-items:center; gap:0.75rem; margin:1.25rem 0; font-size:0.9rem; color:var(--pencil); }
-    .divider::before,.divider::after { content:''; flex:1; height:1.5px; background:repeating-linear-gradient(90deg,var(--ink) 0,var(--ink) 4px,transparent 4px,transparent 10px); opacity:0.3; }
-    .link-row { text-align:center; font-size:1.05rem; color:var(--pencil); }
-    .link-row a { color:var(--blue); text-decoration:none; }
-    .link-row a:hover { background:var(--hi); border-radius:3px; }
-    .footnote { position:absolute; bottom:1rem; right:1.5rem; font-size:0.8rem; color:var(--pencil); opacity:0.5; transform:rotate(1deg); }
+    .px-btn {
+      display: block; width: 100%;
+      font-family: 'Press Start 2P', monospace; font-size: 11px;
+      letter-spacing: 0.04em; padding: 12px 16px;
+      border: 2px solid var(--white); cursor: pointer;
+      text-transform: uppercase; text-align: center;
+      margin-top: 1.4rem; box-shadow: var(--shadow);
+    }
+    .px-btn:hover  { transform: translate(2px,2px); box-shadow: var(--shadow-s); }
+    .px-btn:active { transform: translate(4px,4px); box-shadow: none; }
+    .btn-teal { background: var(--teal); color: var(--bg); }
+
+    .auth-link { display: block; text-align: center; margin-top: 1.3rem; font-size: 9px; color: var(--sky); text-decoration: none; line-height: 2; }
+    .auth-link:hover { color: var(--coral); }
+
+    .flash-container { margin-bottom: 1.1rem; }
+    .flash-msg { background: var(--panel2); border: 2px solid var(--dim); padding: 0.8rem 1rem; margin-bottom: 0.4rem; font-size: 9px; line-height: 2; }
+    .flash-error   { border-color: var(--rose); color: var(--rose); }
+    .flash-success { border-color: var(--mint); color: var(--mint); }
   </style>
 </head>
 <body>
-  <main class="page">
-    <div class="corner-deco cd-tl">* ✦</div>
-    <div class="corner-deco cd-tr">◇ *</div>
-    <div class="corner-deco cd-bl">→</div>
-    <div class="corner-deco cd-br">↗ ↗</div>
+  <div class="star" style="top:10%;left:6%;--d:3s;--delay:0s;">♦</div>
+  <div class="star" style="top:22%;right:8%;--d:2.6s;--delay:0.8s;">★</div>
+  <div class="star" style="bottom:15%;left:12%;--d:3.4s;--delay:0.4s;">●</div>
+  <div class="star" style="bottom:28%;right:9%;--d:2.9s;--delay:1.2s;">◆</div>
 
-    <div class="sketch-panel">
-      <span class="panel-tag">// new account</span>
-      <div class="logo-area">
-        <div class="logo-wordmark">Fairshare</div>
-        <div class="logo-sub">create your account</div>
-      </div>
+  <div class="main-content">
+    <div class="px-panel">
+      <h1 class="page-title">FAIR<span>SHARE</span></h1>
 
       {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-          <div class="flash flash-{{ category }}">{{ message }}</div>
-        {% endfor %}
+        {% if messages %}
+          <div class="flash-container">{% for category, message in messages %}<div class="flash-msg flash-{{ category }}">{{ message }}</div>{% endfor %}</div>
+        {% endif %}
       {% endwith %}
 
-      <form method="POST" action="{{ url_for('signup') }}" id="signupForm">
-        <div class="field">
-          <label class="field-label" for="name">Your name</label>
-          <input type="text" id="name" name="name" class="sketch-input" placeholder="e.g. Alex Chen" required autocomplete="name"/>
+      <form action="{{ url_for('signup') }}" method="POST">
+        <div class="form-group">
+          <label class="form-label" for="name">Name</label>
+          <input type="text" id="name" name="name" class="px-input" placeholder="Your name" required>
         </div>
-        <div class="field">
-          <label class="field-label" for="email">Email address</label>
-          <input type="email" id="email" name="email" class="sketch-input" placeholder="you@example.com" required autocomplete="email"/>
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input type="email" id="email" name="email" class="px-input" placeholder="your@email.com" required>
         </div>
-        <div class="field">
-          <label class="field-label" for="password">Password</label>
-          <input type="password" id="password" name="password" class="sketch-input" placeholder="min. 8 characters" required autocomplete="new-password" oninput="checkStr(this.value)"/>
-          <div class="strength-row">
-            <div class="str-label" id="strLbl">Password strength</div>
-            <div class="str-track"><div class="str-fill" id="strFill"></div></div>
-            <div class="str-txt" id="strTxt"></div>
-          </div>
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input type="password" id="password" name="password" class="px-input" placeholder="••••••••" required>
+          <div class="strength-meter"><div class="strength-fill" id="sf"></div></div>
+          <div class="strength-label" id="slabel">strength</div>
         </div>
-        <button type="submit" class="sketch-btn" id="submitBtn">→ Create account</button>
+        <button type="submit" class="px-btn btn-teal">Create</button>
       </form>
 
-      <div class="divider">or</div>
-      <p class="link-row">Have an account? <a href="{{ url_for('login') }}">Sign in →</a></p>
+      <a href="{{ url_for('login') }}" class="auth-link">← Login Instead</a>
     </div>
-
-    <div class="footnote">fig. 2 — registration screen</div>
-  </main>
+  </div>
 
   <script>
-    const levels = [
-      {pct:'15%', cls:'weak', txt:'Too short'},
-      {pct:'30%', cls:'weak', txt:'Weak'},
-      {pct:'50%', cls:'mid',  txt:'Getting there...'},
-      {pct:'68%', cls:'mid',  txt:'Almost good'},
-      {pct:'85%', cls:'',    txt:'Strong'},
-      {pct:'100%',cls:'',    txt:'Very strong ✓'},
-    ];
-    function checkStr(v) {
-      if (!v) { document.getElementById('strFill').style.width='0%'; document.getElementById('strTxt').textContent=''; return; }
-      let s=0;
-      if(v.length>=8)s+=1; if(v.length>=12)s+=1;
-      if(/[A-Z]/.test(v))s+=1; if(/[0-9]/.test(v))s+=1; if(/[^A-Za-z0-9]/.test(v))s+=2;
-      const l=levels[Math.min(s,levels.length-1)];
-      const f=document.getElementById('strFill');
-      f.style.width=l.pct; f.className='str-fill '+l.cls;
-      document.getElementById('strTxt').textContent=l.txt;
-    }
-    document.getElementById('signupForm').addEventListener('submit',()=>{
-      const b=document.getElementById('submitBtn'); b.textContent='... creating account'; b.disabled=true;
+    const pi = document.getElementById('password');
+    const sf = document.getElementById('sf');
+    const sl = document.getElementById('slabel');
+    const labels = ['', 'weak', 'okay', 'good', 'strong!'];
+    const colors = ['#d45f7a','#d45f7a','#e8c547','#74a9e8','#6bbf8e'];
+    pi.addEventListener('input', () => {
+      const v = pi.value;
+      let s = 0;
+      if (v.length >= 8) s++;
+      if (/[A-Z]/.test(v)) s++;
+      if (/[0-9]/.test(v)) s++;
+      if (/[^A-Za-z0-9]/.test(v)) s++;
+      sf.style.width = (s * 25) + '%';
+      sf.style.background = colors[s] || '#d45f7a';
+      sl.textContent = labels[s] || 'strength';
+      sl.style.color = colors[s] || '#5a587a';
     });
   </script>
 </body>

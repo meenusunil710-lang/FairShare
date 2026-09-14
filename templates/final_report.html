@@ -1,290 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Fairshare — {{ project.name }} Report</title>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Final Report - {{ project.name }} - FairShare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
     :root {
-      --paper:#f7f4ee; --paper-2:#f0ece0; --white:#fffdf9;
-      --ink:#1a1a1a; --pencil:#8a8070; --blue:#2563eb; --blue-lt:rgba(37,99,235,0.1);
-      --green:#15803d; --green-lt:rgba(21,128,61,0.1);
-      --amber:#b45309; --amber-lt:rgba(180,83,9,0.1);
-      --red:#dc2626; --red-lt:rgba(220,38,38,0.08);
-      --hi:rgba(251,191,36,0.4); --shadow:rgba(30,27,20,0.1);
-      --sb-w:230px; --font:'Caveat', cursive;
+      --bg:#12111f; --bg2:#1a1929; --panel:#1e1d30; --panel2:#252340;
+      --coral:#e07055; --teal:#4ec9b0; --amber:#e8c547; --sky:#74a9e8;
+      --rose:#d45f7a; --mint:#6bbf8e;
+      --white:#e8e6f0; --dim:#3d3b56; --dim2:#5a587a;
+      --text:#c8c6dc; --text2:#908eaa;
+      --shadow:4px 4px 0 #0a0916; --shadow-s:2px 2px 0 #0a0916;
     }
-    html, body { height:100%; font-family:var(--font); background-color:var(--paper);
-      background-image:linear-gradient(rgba(0,0,100,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,0,100,0.02) 1px,transparent 1px);
-      background-size:28px 28px; color:var(--ink); }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes drawLine { from{width:0} to{width:100%} }
-    @keyframes hatchIn { from{width:0} to{width:var(--hw)} }
-    @keyframes pop { 0%{transform:scale(0.8);opacity:0} 100%{transform:scale(1);opacity:1} }
-    @keyframes sway { 0%,100%{transform:rotate(var(--r,0deg))} 50%{transform:rotate(calc(var(--r,0deg) + 0.5deg))} }
-
-    /* Sidebar */
-    .sidebar { position:fixed; left:0; top:0; bottom:0; width:var(--sb-w); background:var(--paper-2); border-right:2px dashed rgba(26,26,26,0.25); display:flex; flex-direction:column; z-index:100; }
-    .sb-logo { padding:1.5rem 1.25rem 1rem; border-bottom:1.5px solid rgba(26,26,26,0.15); }
-    .sb-logo-name { font-size:1.8rem; font-weight:700; position:relative; display:inline-block; }
-    .sb-logo-name::after { content:''; position:absolute; bottom:0; left:0; height:2.5px; background:var(--ink); border-radius:2px; animation:drawLine 0.5s ease 0.2s both; }
-    .sb-logo-sub { font-size:0.85rem; color:var(--pencil); margin-top:2px; }
-    .sb-nav { flex:1; padding:1rem 0.75rem; }
-    .sb-section { font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--pencil); margin:1rem 0 0.4rem 0.4rem; }
-    .sb-item { display:flex; align-items:center; gap:0.5rem; padding:0.45rem 0.6rem; margin-bottom:2px; font-size:1.1rem; color:var(--pencil); text-decoration:none; border-radius:3px; position:relative; }
-    .sb-item:hover { color:var(--ink); background:rgba(0,0,0,0.04); }
-    .sb-item.active { color:var(--ink); font-weight:700; background:var(--hi); border-radius:3px 10px 3px 10px / 10px 3px 10px 3px; }
-    .sb-item::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:transparent; border-radius:2px; }
-    .sb-item.active::before { background:var(--ink); }
-    .sb-item-arrow { margin-left:auto; opacity:0; }
-    .sb-item:hover .sb-item-arrow,.sb-item.active .sb-item-arrow { opacity:1; }
-    .sb-footer { padding:0.85rem; border-top:1.5px dashed rgba(26,26,26,0.2); }
-    .sb-user-card { background:var(--white); border:1.5px solid rgba(26,26,26,0.2); border-radius:4px 12px 4px 12px / 12px 4px 12px 4px; padding:0.6rem 0.75rem; margin-bottom:0.6rem; }
-    .sb-user-name { font-size:1rem; font-weight:700; }
-    .sb-user-label { font-size:0.75rem; color:var(--pencil); }
-    .sb-logout { width:100%; padding:0.45rem; font-family:var(--font); font-size:0.95rem; background:transparent; border:1.5px solid rgba(26,26,26,0.3); border-radius:3px 10px 3px 10px / 10px 3px 10px 3px; color:var(--pencil); cursor:pointer; }
-    .sb-logout:hover { border-color:var(--red); color:var(--red); background:var(--red-lt); }
-
-    .main { margin-left:var(--sb-w); min-height:100vh; display:flex; flex-direction:column; }
-    .topbar { position:sticky; top:0; z-index:50; background:rgba(247,244,238,0.95); backdrop-filter:blur(6px); border-bottom:1.5px dashed rgba(26,26,26,0.2); padding:0.85rem 1.75rem; display:flex; align-items:center; justify-content:space-between; }
-    .tb-title { font-size:1.5rem; font-weight:700; }
-    .tb-sub { font-size:0.9rem; color:var(--pencil); }
-    .tb-acts { display:flex; gap:0.5rem; }
-    .sketch-btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.45rem 0.85rem; font-family:var(--font); font-size:0.95rem; font-weight:600; cursor:pointer; border:1.5px solid var(--ink); text-decoration:none; box-shadow:2px 2px 0 var(--shadow); transition:transform 0.1s; }
-    .btn-ink { background:var(--ink); color:var(--paper); border-radius:3px 12px 3px 12px / 12px 3px 12px 3px; }
-    .btn-ink:hover { transform:translate(-1px,-1px); }
-    .btn-ink:active { transform:translate(1px,1px); box-shadow:none; }
-    .btn-ghost { background:transparent; color:var(--ink); border-radius:10px 3px 10px 3px / 3px 10px 3px 10px; }
-    .btn-ghost:hover { background:rgba(0,0,0,0.04); }
-
-    .content { padding:1.75rem; max-width:860px; }
-
-    /* Cover card */
-    .report-cover {
-      background:var(--white); border:2px solid rgba(26,26,26,0.25);
-      border-radius:4px 20px 4px 20px / 20px 4px 20px 4px;
-      box-shadow:5px 6px 0 var(--shadow); margin-bottom:1.5rem;
-      padding:1.75rem; position:relative; overflow:hidden;
-      animation:fadeUp 0.3s ease both;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Press Start 2P', monospace; font-size: 12px;
+      background: var(--bg); color: var(--text);
+      line-height: 1.6; overflow-x: hidden; min-height: 100vh;
+      background-image: linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);
+      background-size: 8px 8px;
     }
-    .report-cover.complete { border-top:4px solid var(--green); }
-    .report-cover.in-progress { border-top:4px solid var(--blue); }
-    .report-cover-annot { position:absolute; top:0.6rem; right:1rem; font-size:0.78rem; color:var(--pencil); transform:rotate(1.2deg); opacity:0.6; }
-    .report-cover-stamp {
-      position:absolute; top:1.25rem; right:1.5rem; font-size:1.8rem; font-weight:700;
-      opacity:0.08; transform:rotate(-12deg); letter-spacing:-0.02em;
-    }
-    .report-label { font-size:0.82rem; color:var(--pencil); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:0.5rem; }
-    .report-title { font-size:2.2rem; font-weight:700; letter-spacing:-0.01em; margin-bottom:0.25rem; line-height:1.1; }
-    .report-meta { font-size:1rem; color:var(--pencil); margin-bottom:1.25rem; }
-    .divider-dashed { height:1.5px; border:none; border-top:1.5px dashed rgba(26,26,26,0.2); margin:1.25rem 0; }
 
-    /* Score cards */
-    .score-row { display:grid; grid-template-columns:repeat(4,1fr); gap:0.85rem; margin-bottom:1.25rem; }
-    .score-card {
-      background:var(--paper-2); border:1.5px solid rgba(26,26,26,0.15);
-      padding:0.85rem 0.75rem; text-align:center;
-      box-shadow:3px 3px 0 var(--shadow);
-      animation:pop 0.35s ease both;
-    }
-    .score-card:nth-child(1) { border-radius:3px 14px 3px 14px / 14px 3px 14px 3px; --r:-0.5deg; animation:pop 0.3s ease 0.05s both,sway 7s ease-in-out infinite; }
-    .score-card:nth-child(2) { border-radius:14px 3px 14px 3px / 3px 14px 3px 14px; --r:0.4deg;  animation:pop 0.3s ease 0.1s  both,sway 8s ease-in-out 1s infinite; }
-    .score-card:nth-child(3) { border-radius:3px 14px 3px 14px / 14px 3px 14px 3px; --r:-0.3deg; animation:pop 0.3s ease 0.15s both,sway 6s ease-in-out 2s infinite; }
-    .score-card:nth-child(4) { border-radius:14px 3px 14px 3px / 3px 14px 3px 14px; --r:0.5deg;  animation:pop 0.3s ease 0.2s  both,sway 7s ease-in-out 3s infinite; }
-    .sc-accent { height:3px; width:100%; margin:-0.85rem -0.75rem 0.5rem; width:calc(100% + 1.5rem); }
-    .sc-val { font-size:2.2rem; font-weight:700; line-height:1; margin-bottom:0.25rem; }
-    .sc-lbl { font-size:0.8rem; color:var(--pencil); letter-spacing:0.04em; }
+    @keyframes fadeSlideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes slideInRight { from{opacity:0;transform:translateX(10px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes pixelFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
 
-    /* Big progress bar */
-    .prog-label { display:flex; justify-content:space-between; font-size:0.95rem; color:var(--pencil); margin-bottom:4px; }
-    .prog-bar { height:14px; background:rgba(0,0,0,0.05); border:1.5px solid var(--pencil); border-radius:1px 6px 1px 6px / 6px 1px 6px 1px; overflow:hidden; }
-    .prog-fill { height:100%; --hw:0%; width:var(--hw); transition:width 0.9s ease; }
-    .hatch-blue  { background:repeating-linear-gradient(-45deg,var(--blue)  0,var(--blue)  5px,var(--blue-lt)  5px,var(--blue-lt)  9px); }
-    .hatch-green { background:repeating-linear-gradient(-45deg,var(--green) 0,var(--green) 5px,var(--green-lt) 5px,var(--green-lt) 9px); }
-    .hatch-amber { background:repeating-linear-gradient(-45deg,var(--amber) 0,var(--amber) 5px,var(--amber-lt) 5px,var(--amber-lt) 9px); }
+    .layout-wrapper { display: flex; min-height: 100vh; }
 
-    /* Section */
-    .section-title { font-size:1.4rem; font-weight:700; margin-bottom:1rem; position:relative; display:inline-block; padding-bottom:3px; }
-    .section-title::after { content:''; position:absolute; bottom:0; left:0; height:2px; background:var(--ink); border-radius:1px; animation:drawLine 0.4s ease 0.5s both; }
+    .sidebar { width:250px; background:var(--panel); border-right:3px solid var(--dim); box-shadow:3px 0 0 #0a0916; padding:1.4rem 1.2rem; display:flex; flex-direction:column; position:fixed; top:0; bottom:0; left:0; z-index:100; }
+    .logo-container { margin-bottom:1.6rem; text-align:center; border-bottom:2px solid var(--dim); padding-bottom:1rem; }
+    .logo { font-size:13px; color:var(--coral); text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+    .logo-icon { width:18px; height:18px; background:var(--coral); box-shadow:var(--shadow-s); animation:pixelFloat 2.8s ease-in-out infinite; }
+    .nav-links { list-style:none; flex:1; }
+    .nav-link { display:block; padding:10px 12px; color:var(--text2); text-decoration:none; font-size:10px; border:2px solid transparent; margin-bottom:4px; }
+    .nav-link:hover { background:var(--panel2); color:var(--teal); border-color:#266b5c; transform:translate(-2px,0); }
+    .nav-link.active { background:var(--panel2); color:var(--coral); border-color:var(--coral); box-shadow:var(--shadow-s); }
+    .nav-link.active::before { content:'▶'; margin-right:6px; font-size:8px; color:var(--coral); }
+    .user-card { margin-top:auto; padding-top:1rem; border-top:2px solid var(--dim); display:flex; align-items:center; justify-content:space-between; }
+    .user-info { display:flex; align-items:center; gap:8px; }
+    .avatar { width:30px; height:30px; background:var(--amber); color:var(--bg); display:flex; align-items:center; justify-content:center; font-size:12px; border:2px solid var(--dim); }
+    .user-name { font-size:9px; color:var(--dim2); }
 
-    /* Module cards */
-    .module-card {
-      background:var(--white); border:1.5px solid rgba(26,26,26,0.18);
-      margin-bottom:0.85rem; box-shadow:3px 4px 0 var(--shadow);
-      animation:fadeUp 0.25s ease both; overflow:hidden;
-    }
-    .module-card:nth-child(odd)  { border-radius:3px 14px 3px 14px / 14px 3px 14px 3px; }
-    .module-card:nth-child(even) { border-radius:14px 3px 14px 3px / 3px 14px 3px 14px; }
+    .main-content { flex:1; margin-left:250px; padding:1.8rem; max-width:1100px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.6rem; padding-bottom:1rem; border-bottom:2px solid var(--dim); animation:fadeSlideUp .3s ease-out; }
+    .page-title h1 { font-size:16px; margin-bottom:0.4rem; color:var(--white); }
+    .page-subtitle { color:var(--sky); font-size:9px; }
+    .top-actions { display:flex; gap:0.9rem; align-items:center; }
 
-    .mc-header { display:flex; align-items:center; justify-content:space-between; padding:0.7rem 1rem; cursor:pointer; transition:background 0.1s; }
-    .mc-header:hover { background:rgba(0,0,0,0.03); }
-    .mc-left { display:flex; align-items:center; gap:0.6rem; }
-    .mc-check { width:16px; height:16px; border:2px solid var(--pencil); border-radius:2px 6px 2px 6px / 6px 2px 6px 2px; display:flex; align-items:center; justify-content:center; font-size:0.7rem; flex-shrink:0; }
-    .mc-check.done { border-color:var(--green); background:var(--green); color:#fff; }
-    .mc-name { font-size:1.1rem; font-weight:700; }
-    .mc-assignee { font-size:0.85rem; color:var(--pencil); margin-top:1px; }
-    .mc-right { display:flex; gap:0.4rem; align-items:center; }
-    .mb { font-size:0.75rem; padding:1px 8px; border:1.5px solid; border-radius:2px 6px 2px 6px / 6px 2px 6px 2px; }
-    .mb-done   { border-color:var(--green); color:var(--green); background:var(--green-lt); }
-    .mb-pend   { border-color:var(--pencil);color:var(--pencil); }
-    .mb-red    { border-color:var(--red);   color:var(--red); }
-    .mb-amber  { border-color:var(--amber); color:var(--amber); }
-    .mb-green  { border-color:var(--green); color:var(--green); }
-    .mc-chevron { font-size:1.1rem; color:var(--pencil); transition:transform 0.15s; }
-    .mc-chevron.open { transform:rotate(90deg); }
+    .px-btn { font-family:'Press Start 2P',monospace; font-size:10px; padding:9px 15px; border:2px solid var(--white); cursor:pointer; text-transform:uppercase; text-decoration:none; display:inline-block; box-shadow:var(--shadow); }
+    .px-btn:hover  { transform:translate(2px,2px); box-shadow:var(--shadow-s); }
+    .px-btn:active { transform:translate(4px,4px); box-shadow:none; }
+    .btn-coral  { background:var(--coral);  color:var(--bg); }
+    .btn-sky    { background:var(--sky);    color:var(--bg); }
+    .btn-dark   { background:var(--panel2); color:var(--text2); border-color:var(--dim); box-shadow:var(--shadow-s); }
+    .btn-sm     { font-size:9px; padding:7px 12px; }
 
-    .mc-body { display:none; border-top:1.5px dashed rgba(26,26,26,0.12); }
-    .mc-body.open { display:block; animation:fadeUp 0.15s ease; }
+    .px-panel { background:var(--panel); border:2px solid var(--dim); box-shadow:var(--shadow); padding:1.4rem; }
 
-    .upd-list { padding:0.75rem 1rem; }
-    .upd-item { display:flex; gap:0.6rem; margin-bottom:0.75rem; }
-    .upd-item:last-child { margin-bottom:0; }
-    .upd-date { background:var(--blue-lt); border:1.5px solid rgba(37,99,235,0.25); color:var(--blue); font-size:0.82rem; padding:1px 10px; white-space:nowrap; align-self:flex-start; border-radius:2px 6px 2px 6px / 6px 2px 6px 2px; }
-    .upd-text { font-size:1rem; color:var(--pencil); line-height:1.5; }
-    .no-upd { padding:0.75rem 1rem; color:var(--pencil); font-size:0.95rem; font-style:italic; }
+    .hero-panel { margin-bottom:1.6rem; padding:1.6rem; border:2px solid var(--dim); background:var(--panel); animation:fadeSlideUp .35s ease-out .1s both; }
+    .hero-panel.complete { border-color:var(--mint); border-top:5px solid var(--mint); }
+    .hero-panel.incomplete { border-color:var(--dim); border-top:5px solid var(--coral); }
+    .hero-status { display:inline-block; padding:3px 8px; font-size:9px; border:1px solid var(--dim); color:var(--dim2); margin-bottom:0.6rem; }
+    .hero-status.done { border-color:var(--mint); color:var(--mint); }
+    .hero-status.wip  { border-color:var(--amber); color:var(--amber); }
+    .hero-panel h2 { font-size:18px; margin-bottom:0.6rem; line-height:1.4; color:var(--white); }
+    .hero-meta { color:var(--dim2); display:flex; gap:1.2rem; font-size:9px; line-height:2; flex-wrap:wrap; }
+    .hero-meta strong { color:var(--text2); }
+
+    .score-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1.1rem; margin-bottom:1.6rem; }
+    .score-card { text-align:center; animation:fadeSlideUp .35s ease-out both; padding:1.2rem; }
+    .score-card:nth-child(1) { animation-delay:.1s; border-top:4px solid var(--text2); }
+    .score-card:nth-child(2) { animation-delay:.15s; border-top:4px solid var(--mint); }
+    .score-card:nth-child(3) { animation-delay:.2s; border-top:4px solid var(--rose); }
+    .score-card:nth-child(4) { animation-delay:.25s; border-top:4px solid var(--sky); }
+    .score-card:hover { transform:translate(-1px,-1px); box-shadow:5px 5px 0 #0a0916; }
+    .score-label { color:var(--dim2); text-transform:uppercase; font-size:9px; letter-spacing:1px; margin-bottom:0.6rem; line-height:1.8; }
+    .score-val { font-size:26px; line-height:1.1; }
+    .sc-total { color:var(--white); }
+    .sc-done  { color:var(--mint); }
+    .sc-pend  { color:var(--rose); }
+    .sc-prog  { color:var(--sky); }
+
+    .progress-container { margin-bottom:1.8rem; background:var(--bg2); border:2px solid var(--dim); height:22px; position:relative; overflow:hidden; }
+    .progress-bar { height:100%; background:var(--sky); width:0; border-right:2px solid var(--dim2); transition:width .8s step-end; }
+    .progress-text { position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:10px; color:var(--white); z-index:2; }
+
+    .section-title { font-size:13px; margin-bottom:1.1rem; color:var(--text2); }
+    .module-list { display:flex; flex-direction:column; gap:0.8rem; }
+    .module-card { background:var(--panel2); border:1px solid var(--dim); animation:fadeSlideUp .3s ease-out both; }
+    .module-card:hover { border-color:var(--dim2); }
+    .module-header { padding:0.9rem 1.2rem; display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; }
+    .mod-info { display:flex; align-items:center; gap:0.9rem; flex:1; flex-wrap:wrap; }
+    .mod-status-icon { width:20px; height:20px; border:1px solid var(--dim); display:flex; align-items:center; justify-content:center; background:var(--bg); font-size:11px; color:var(--bg); flex-shrink:0; }
+    .mod-done .mod-status-icon { background:var(--mint); color:var(--bg); border-color:var(--mint); }
+    .mod-name { font-size:10px; color:var(--text); }
+    .mod-assignee { color:var(--sky); font-size:9px; }
+    .badge { padding:3px 6px; font-size:8px; text-transform:uppercase; border:1px solid var(--dim); letter-spacing:.5px; display:inline-block; color:var(--dim2); }
+    .badge-high   { color:var(--rose); border-color:var(--rose); }
+    .badge-medium { color:var(--amber); border-color:var(--amber); }
+    .badge-low    { color:var(--mint); border-color:var(--mint); }
+    .chevron { font-size:14px; font-family:monospace; color:var(--dim2); }
+    .module-card.open .chevron { color:var(--teal); }
+    .module-body { display:none; padding:0 1.2rem 1.2rem 3rem; border-top:1px solid var(--dim); padding-top:0.9rem; }
+    .module-card.open .module-body { display:block; }
+    .update-list { list-style:none; }
+    .update-item { position:relative; padding-left:1.2rem; margin-bottom:0.8rem; }
+    .update-item::before { content:''; position:absolute; left:0; top:6px; width:7px; height:7px; background:var(--teal); transform:rotate(45deg); }
+    .update-date { font-size:8px; color:var(--dim2); margin-bottom:0.3rem; }
+    .update-text { font-size:9px; color:var(--text2); line-height:2; }
+    .no-updates   { color:var(--dim2); font-size:9px; line-height:2; }
 
     @media print {
-      .sidebar, .topbar { display:none !important; }
-      .main { margin-left:0 !important; }
+      .sidebar, .top-actions { display:none!important; }
+      body { background:white!important; color:black!important; }
+      .main-content { margin-left:0!important; padding:0!important; }
+      .px-panel, .module-card { border-color:#333!important; box-shadow:none!important; background:white!important; color:black!important; }
+      .module-body { display:block!important; }
+      .chevron { display:none; }
+      .progress-bar { background:#555; }
+      .score-val,.page-title h1,.hero-panel h2 { color:black!important; }
     }
-    @media(max-width:960px){.score-row{grid-template-columns:1fr 1fr}}
-    @media(max-width:768px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.content{padding:1rem}}
+    @media (max-width:768px) { .sidebar{display:none} .main-content{margin-left:0;padding:1rem} .score-row{grid-template-columns:1fr 1fr} }
   </style>
 </head>
 <body>
-  <aside class="sidebar">
-    <div class="sb-logo">
-      <div class="sb-logo-name">Fairshare</div>
-      <div class="sb-logo-sub">project management</div>
-    </div>
-    <nav class="sb-nav">
-      <div class="sb-section">Navigation</div>
-      <a href="{{ url_for('home') }}" class="sb-item"><span>📋</span> Dashboard <span class="sb-item-arrow">→</span></a>
-      <a href="{{ url_for('project_modules', project_id=project.id) }}" class="sb-item"><span>📁</span> Project modules <span class="sb-item-arrow">→</span></a>
-      <div class="sb-section">Current</div>
-      <div class="sb-item active"><span>📊</span> Final report <span class="sb-item-arrow">→</span></div>
-    </nav>
-    <div class="sb-footer">
-      <div class="sb-user-card">
-        <div class="sb-user-label">signed in as</div>
-        <div class="sb-user-name">{{ user_name }}</div>
+  <div class="layout-wrapper">
+    <aside class="sidebar">
+      <div class="logo-container">
+        <a href="{{ url_for('home') }}" class="logo"><div class="logo-icon"></div>FAIRSHARE</a>
       </div>
-      <form action="{{ url_for('logout') }}" method="get" style="margin:0">
-        <button type="submit" class="sb-logout">↩ Sign out</button>
-      </form>
-    </div>
-  </aside>
-
-  <div class="main">
-    <header class="topbar">
-      <div>
-        <div class="tb-title">Final Report</div>
-        <div class="tb-sub">{{ project.name }}</div>
-      </div>
-      <div class="tb-acts">
-        <a href="{{ url_for('project_modules', project_id=project.id) }}" class="sketch-btn btn-ghost">← Back</a>
-        <button class="sketch-btn btn-ink" onclick="window.print()">🖨 Print</button>
-      </div>
-    </header>
-
-    <div class="content">
-      <!-- Cover -->
-      <div class="report-cover {{ 'complete' if progress==100 else 'in-progress' }}">
-        <div class="report-cover-annot">report #{{ '%03d' % project.id }}</div>
-        <div class="report-cover-stamp">{{ '✓' if progress==100 else '…' }}</div>
-        <div class="report-label">Project Report</div>
-        <div class="report-title">{{ project.name }}</div>
-        <div class="report-meta">
-          {% if project.deadline %}Deadline: {{ project.deadline }} · {% endif %}Generated today
+      <ul class="nav-links">
+        <li><a href="{{ url_for('home') }}" class="nav-link">&gt; Dashboard</a></li>
+        <li><a href="{{ url_for('project_modules', project_id=project.id) }}" class="nav-link">&gt; Project</a></li>
+        <li><a href="#" class="nav-link active">Report</a></li>
+      </ul>
+      <div class="user-card">
+        <div class="user-info">
+          <div class="avatar">{{ user_name[0]|upper if user_name else 'U' }}</div>
+          <span class="user-name">{{ user_name }}</span>
         </div>
+        <form action="{{ url_for('logout') }}" method="POST" style="margin:0">
+          <button type="submit" class="px-btn btn-dark btn-sm">OUT</button>
+        </form>
+      </div>
+    </aside>
 
-        <div class="score-row">
-          <div class="score-card">
-            <div class="sc-accent" style="background:var(--blue)"></div>
-            <div class="sc-val" style="color:var(--blue)">{{ total }}</div>
-            <div class="sc-lbl">Total</div>
-          </div>
-          <div class="score-card">
-            <div class="sc-accent" style="background:var(--green)"></div>
-            <div class="sc-val" style="color:var(--green)">{{ completed }}</div>
-            <div class="sc-lbl">Done</div>
-          </div>
-          <div class="score-card">
-            <div class="sc-accent" style="background:var(--red)"></div>
-            <div class="sc-val" style="color:var(--red)">{{ total - completed }}</div>
-            <div class="sc-lbl">Pending</div>
-          </div>
-          <div class="score-card">
-            <div class="sc-accent" style="background:{% if progress==100 %}var(--green){% elif progress>=50 %}var(--blue){% else %}var(--amber){% endif %}"></div>
-            <div class="sc-val" style="color:{% if progress==100 %}var(--green){% elif progress>=50 %}var(--blue){% else %}var(--amber){% endif %}">{{ progress }}%</div>
-            <div class="sc-lbl">Progress</div>
+    <main class="main-content">
+      <div class="topbar">
+        <!-- BACK button in the top left -->
+        <div style="display:flex; align-items:center; gap:16px;">
+          <a href="{{ url_for('project_modules', project_id=project.id) }}" class="px-btn btn-dark btn-sm">BACK</a>
+          <div class="page-title">
+            <h1>Final Report</h1>
+            <div class="page-subtitle">{{ project.name }}</div>
           </div>
         </div>
-
-        <div class="prog-label">
-          <span>Completion</span>
-          <span style="font-weight:700;color:{% if progress==100 %}var(--green){% elif progress>=50 %}var(--blue){% else %}var(--amber){% endif %}">{{ progress }}%</span>
-        </div>
-        <div class="prog-bar">
-          <div class="prog-fill {% if progress==100 %}hatch-green{% elif progress>=50 %}hatch-blue{% else %}hatch-amber{% endif %}"
-               data-target="{{ progress }}%"></div>
+        <div class="top-actions">
+          <button onclick="window.print()" class="px-btn btn-sky btn-sm">PRINT</button>
         </div>
       </div>
 
-      <!-- Module breakdown -->
-      <div class="section-title">Module breakdown</div>
+      <div class="px-panel hero-panel {% if progress == 100 %}complete{% else %}incomplete{% endif %}">
+        <div class="hero-status {% if progress == 100 %}done{% else %}wip{% endif %}">
+          {% if progress == 100 %}✓ COMPLETED{% else %}IN PROGRESS{% endif %}
+        </div>
+        <h2>{{ project.name }}</h2>
+        <div class="hero-meta">
+          <span>Deadline: <strong>{{ project.deadline }}</strong></span>
+          <span>Generated: <strong><script>document.write(new Date().toLocaleDateString())</script></strong></span>
+        </div>
+      </div>
 
-      {% for module in modules %}
-        <div class="module-card" style="animation-delay:{{ loop.index * 0.06 }}s">
-          <div class="mc-header" onclick="toggle({{ loop.index0 }})" id="mh-{{ loop.index0 }}">
-            <div class="mc-left">
-              <div class="mc-check {{ 'done' if module.completed else '' }}">{{ '✓' if module.completed else '' }}</div>
-              <div>
-                <div class="mc-name">{{ module.name }}</div>
-                <div class="mc-assignee">{% if module.member_name %}↳ {{ module.member_name }}{% else %}Unassigned{% endif %} · {{ updates[module.id]|length }} log{{ 's' if updates[module.id]|length != 1 else '' }}</div>
-              </div>
+      <div class="score-row">
+        <div class="px-panel score-card"><div class="score-label">Total Modules</div><div class="score-val sc-total">{{ total }}</div></div>
+        <div class="px-panel score-card"><div class="score-label">Completed</div><div class="score-val sc-done">{{ completed }}</div></div>
+        <div class="px-panel score-card"><div class="score-label">Pending</div><div class="score-val sc-pend">{{ total - completed }}</div></div>
+        <div class="px-panel score-card"><div class="score-label">Progress</div><div class="score-val sc-prog">{{ progress }}%</div></div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar" id="reportProgress" data-target="{{ progress }}"></div>
+        <div class="progress-text">{{ progress }}%</div>
+      </div>
+
+      <div class="section-title">MODULE BREAKDOWN</div>
+      <div class="module-list">
+        {% for mod in modules %}
+        <div class="module-card {% if loop.index0 == 0 %}open{% endif %} {% if mod.completed %}mod-done{% endif %}" style="animation-delay:{{ loop.index * 0.04 }}s">
+          <div class="module-header" onclick="toggleModule(this)">
+            <div class="mod-info">
+              <div class="mod-status-icon">{% if mod.completed %}✓{% endif %}</div>
+              <div class="mod-name">{{ mod.name }}</div>
+              <span class="mod-assignee">{{ mod.member_name }}</span>
+              <span class="badge badge-{{ mod.priority|lower }}">{{ mod.priority }}</span>
             </div>
-            <div class="mc-right">
-              <span class="mb {{ 'mb-done' if module.completed else 'mb-pend' }}">{{ 'Done' if module.completed else 'Pending' }}</span>
-              <span class="mb {% if module.priority=='High' %}mb-red{% elif module.priority=='Low' %}mb-green{% else %}mb-amber{% endif %}">{{ module.priority }}</span>
-              <span class="mc-chevron" id="cv-{{ loop.index0 }}">›</span>
-            </div>
+            <div class="chevron">&rsaquo;</div>
           </div>
-          <div class="mc-body" id="mb-{{ loop.index0 }}">
-            <div class="upd-list">
-              {% if updates[module.id] %}
-                {% for upd in updates[module.id] %}
-                  <div class="upd-item">
-                    <span class="upd-date">{{ upd.update_date }}</span>
-                    <span class="upd-text">{{ upd.update_text }}</span>
-                  </div>
-                {% endfor %}
-              {% else %}
-                <div class="no-upd">No entries recorded for this module.</div>
-              {% endif %}
-            </div>
+          <div class="module-body">
+            {% set mod_updates = updates.get(mod.id, []) %}
+            {% if mod_updates %}
+            <ul class="update-list">
+              {% for u in mod_updates %}
+              <li class="update-item">
+                <div class="update-date">{{ u.update_date }}</div>
+                <div class="update-text">{{ u.update_text }}</div>
+              </li>
+              {% endfor %}
+            </ul>
+            {% else %}
+            <div class="no-updates">No updates recorded.</div>
+            {% endif %}
           </div>
         </div>
-      {% endfor %}
-    </div>
+        {% endfor %}
+      </div>
+    </main>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    function toggleModule(header) { header.parentElement.classList.toggle('open'); }
+    window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => {
-        document.querySelectorAll('.prog-fill').forEach(el => { el.style.setProperty('--hw', el.dataset.target); });
-      }, 300);
-      if (document.querySelector('.mc-header')) toggle(0);
+        const bar = document.getElementById('reportProgress');
+        bar.style.width = bar.getAttribute('data-target') + '%';
+      }, 200);
     });
-
-    function toggle(i) {
-      const body = document.getElementById('mb-'+i);
-      const chev = document.getElementById('cv-'+i);
-      const open = body.classList.toggle('open');
-      chev.classList.toggle('open', open);
-    }
   </script>
 </body>
 </html>

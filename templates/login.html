@@ -1,212 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Fairshare — Sign In</title>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - FairShare</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --paper:   #f7f4ee;
-      --paper-2: #f0ece0;
-      --white:   #fffdf9;
-      --ink:     #1a1a1a;
-      --pencil:  #8a8070;
-      --blue:    #2563eb;
-      --blue-lt: rgba(37,99,235,0.1);
-      --green:   #15803d;
-      --amber:   #b45309;
-      --red:     #dc2626;
-      --red-lt:  rgba(220,38,38,0.08);
-      --hi:      rgba(251,191,36,0.38);
-      --shadow:  rgba(30,27,20,0.11);
-      --font:    'Caveat', cursive;
+      --bg:#12111f; --bg2:#1a1929; --panel:#1e1d30; --panel2:#252340;
+      --coral:#e07055; --teal:#4ec9b0; --amber:#e8c547; --sky:#74a9e8;
+      --rose:#d45f7a; --mint:#6bbf8e;
+      --coral-d:#8a3a28; --teal-d:#266b5c;
+      --white:#e8e6f0; --dim:#3d3b56; --dim2:#5a587a;
+      --text:#c8c6dc; --text2:#908eaa;
+      --shadow:4px 4px 0 #0a0916; --shadow-s:2px 2px 0 #0a0916;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Press Start 2P', monospace; font-size: 12px;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; justify-content: center; align-items: center;
+      overflow-x: hidden;
+      background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 8px 8px;
     }
 
-    html, body {
-      min-height: 100vh;
-      font-family: var(--font);
-      background-color: var(--paper);
-      background-image:
-        linear-gradient(rgba(0,0,100,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0,0,100,0.02) 1px, transparent 1px);
-      background-size: 28px 28px;
-      color: var(--ink);
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pixelFloat {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-4px); }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; } 50% { opacity: 0; }
     }
 
-    /* ── Animations ── */
-    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
-    @keyframes wobble { 0%,100%{transform:rotate(-0.4deg)} 50%{transform:rotate(0.4deg)} }
-    @keyframes drawLine { from{width:0} to{width:100%} }
-    @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0.2} }
-    @keyframes inkIn { from{opacity:0;transform:scale(0.96) rotate(-1deg)} to{opacity:1;transform:scale(1) rotate(0deg)} }
-
-    /* ── Layout ── */
-    .page {
-      min-height: 100vh; display:flex; align-items:center; justify-content:center;
-      padding: 2rem;
-      position: relative; overflow: hidden;
+    .main-content {
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      padding: 2rem; width: 100%;
     }
 
-    /* Decorative corner doodles */
-    .corner-deco {
-      position:absolute; font-family:var(--font); color:var(--pencil);
-      font-size:1.2rem; opacity:0.4; pointer-events:none;
-      animation: wobble 6s ease-in-out infinite;
-    }
-    .cd-tl { top:1.5rem; left:1.5rem; transform:rotate(-15deg); }
-    .cd-tr { top:1.5rem; right:1.5rem; transform:rotate(12deg); }
-    .cd-bl { bottom:1.5rem; left:1.5rem; transform:rotate(8deg); }
-    .cd-br { bottom:1.5rem; right:1.5rem; transform:rotate(-10deg); }
-
-    /* ── Sketch panel ── */
-    .sketch-panel {
-      width:100%; max-width:400px;
-      background: var(--white);
-      border: 2px solid var(--ink);
-      border-radius: 4px 18px 4px 18px / 18px 4px 18px 4px;
-      box-shadow: 5px 6px 0 var(--shadow), 2px 2px 0 rgba(0,0,0,0.04);
-      padding: 2.5rem 2rem 2rem;
-      animation: inkIn 0.4s ease both;
+    .star {
+      position: fixed; font-size: 10px; color: var(--dim2); pointer-events: none;
+      animation: pixelFloat var(--d, 3s) ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
     }
 
-    /* Annotation tag at top */
-    .panel-tag {
-      position:absolute; top:-14px; left:20px;
-      background: var(--blue); color:#fff;
-      font-size:0.8rem; padding:1px 10px;
-      border: 1.5px solid var(--ink);
-      border-radius: 2px 10px 2px 10px / 10px 2px 10px 2px;
-      letter-spacing:0.03em;
+    .px-panel {
+      background: var(--panel); padding: 2.6rem 2.2rem;
+      width: 100%; max-width: 440px;
+      border: 2px solid var(--dim); box-shadow: var(--shadow);
+      animation: fadeSlideUp 0.35s ease-out;
+      position: relative;
     }
 
-    /* Logo area */
-    .logo-area { text-align:center; margin-bottom:2rem; }
-    .logo-wordmark {
-      font-size:3rem; font-weight:700; letter-spacing:-0.02em; line-height:1;
-      position:relative; display:inline-block;
-    }
-    .logo-wordmark::after {
-      content:''; position:absolute; bottom:0; left:0; height:3px;
-      background:var(--ink); border-radius:2px;
-      animation: drawLine 0.6s ease 0.3s both;
-    }
-    .logo-sub { font-size:0.95rem; color:var(--pencil); margin-top:0.25rem; letter-spacing:0.03em; }
-    .logo-cursor { display:inline-block; animation:blink 1.2s steps(1) infinite; }
-
-    /* Flash messages */
-    .flash { margin-bottom:1.25rem; padding:0.6rem 0.85rem; font-size:1rem;
-      border: 1.5px solid; border-radius:2px 10px 2px 10px / 10px 2px 10px 2px; }
-    .flash-error { border-color:var(--red); background:var(--red-lt); color:var(--red); }
-    .flash-error::before { content:'⚠ '; }
-
-    /* Form fields */
-    .field { margin-bottom:1.5rem; position:relative; }
-    .field-label {
-      display:block; font-size:0.85rem; color:var(--pencil);
-      letter-spacing:0.06em; text-transform:uppercase; margin-bottom:0.25rem;
-    }
-    .field-label::before { content:'— '; }
-
-    .sketch-input {
-      width:100%; padding:0.5rem 0.1rem;
-      background:transparent;
-      border:none; border-bottom:2px solid var(--ink);
-      font-family:var(--font); font-size:1.15rem; color:var(--ink);
-      outline:none; transition:border-color 0.15s;
-    }
-    .sketch-input:focus { border-bottom-color:var(--blue); }
-    .sketch-input::placeholder { color:var(--pencil); opacity:0.6; }
-
-    /* Focus line anim */
-    .field::after {
-      content:''; position:absolute; bottom:0; left:0;
-      height:2px; width:0; background:var(--blue);
-      transition:width 0.2s ease;
-    }
-    .field:focus-within::after { width:100%; }
-
-    /* Submit button */
-    .sketch-btn {
-      width:100%; padding:0.7rem 1rem;
-      background:var(--ink); color:var(--paper);
-      border:2px solid var(--ink);
-      border-radius: 3px 14px 3px 14px / 14px 3px 14px 3px;
-      font-family:var(--font); font-size:1.2rem; font-weight:700; letter-spacing:0.04em;
-      cursor:pointer; text-align:center; text-decoration:none; display:block;
-      box-shadow: 3px 4px 0 var(--shadow);
-      transition: transform 0.1s, box-shadow 0.1s;
-      margin-top:0.5rem;
-    }
-    .sketch-btn:hover { transform:translate(-1px,-1px); box-shadow:4px 5px 0 var(--shadow); }
-    .sketch-btn:active { transform:translate(2px,2px); box-shadow:1px 1px 0 var(--shadow); }
-
-    .divider {
-      display:flex; align-items:center; gap:0.75rem;
-      margin:1.5rem 0; font-size:0.9rem; color:var(--pencil);
-    }
-    .divider::before, .divider::after {
-      content:''; flex:1; height:1.5px;
-      background:repeating-linear-gradient(90deg, var(--ink) 0, var(--ink) 4px, transparent 4px, transparent 10px);
-      opacity:0.3;
+    .px-panel::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 4px; background: var(--coral);
     }
 
-    .link-row { text-align:center; font-size:1.05rem; color:var(--pencil); }
-    .link-row a { color:var(--blue); text-decoration:none; }
-    .link-row a:hover { background:var(--hi); border-radius:3px; }
+    .page-title {
+      font-size: 16px; text-align: center;
+      margin-bottom: 2rem; color: var(--white);
+    }
+    .page-title span { color: var(--coral); }
 
-    /* Bottom annotation */
-    .footnote { position:absolute; bottom:1rem; right:1.5rem; font-size:0.8rem; color:var(--pencil); opacity:0.5; transform:rotate(1deg); }
+    .form-group { margin-bottom: 1.4rem; }
+    .form-label { display: block; font-size: 9px; letter-spacing: 1px; margin-bottom: 0.6rem; color: var(--dim2); text-transform: uppercase; }
+
+    .px-input {
+      width: 100%; padding: 10px 12px;
+      background: var(--bg2); border: 2px solid var(--dim);
+      color: var(--text); font-family: 'Press Start 2P', monospace;
+      font-size: 10px; outline: none; box-shadow: var(--shadow-s);
+    }
+    .px-input:focus { border-color: var(--teal); }
+    .px-input::placeholder { color: var(--dim2); }
+
+    .px-btn {
+      display: block; width: 100%;
+      font-family: 'Press Start 2P', monospace; font-size: 11px;
+      letter-spacing: 0.04em; padding: 12px 16px;
+      border: 2px solid var(--white); cursor: pointer;
+      text-transform: uppercase; text-align: center;
+      margin-top: 1.6rem; box-shadow: var(--shadow);
+    }
+    .px-btn:hover  { transform: translate(2px,2px); box-shadow: var(--shadow-s); }
+    .px-btn:active { transform: translate(4px,4px); box-shadow: none; }
+    .btn-coral { background: var(--coral); color: var(--bg); }
+
+    .auth-link {
+      display: block; text-align: center; margin-top: 1.4rem;
+      font-size: 9px; color: var(--sky); text-decoration: none; line-height: 2;
+    }
+    .auth-link:hover { color: var(--teal); }
+
+    .flash-container { margin-bottom: 1.2rem; }
+    .flash-msg {
+      background: var(--panel2); border: 2px solid var(--dim);
+      padding: 0.9rem 1rem; margin-bottom: 0.5rem;
+      font-size: 9px; line-height: 2;
+      animation: fadeSlideUp 0.2s ease-out;
+    }
+    .flash-error   { border-color: var(--rose); color: var(--rose); }
+    .flash-success { border-color: var(--mint); color: var(--mint); }
   </style>
 </head>
 <body>
-  <main class="page">
-    <!-- Corner doodles -->
-    <div class="corner-deco cd-tl">✦ ✦</div>
-    <div class="corner-deco cd-tr">* *</div>
-    <div class="corner-deco cd-bl">→ →</div>
-    <div class="corner-deco cd-br">↗</div>
+  <div class="star" style="top:12%;left:8%;--d:3.2s;--delay:0s;">★</div>
+  <div class="star" style="top:25%;right:10%;--d:2.8s;--delay:0.5s;">◆</div>
+  <div class="star" style="bottom:18%;left:14%;--d:3.6s;--delay:1s;">●</div>
+  <div class="star" style="bottom:30%;right:6%;--d:2.5s;--delay:0.3s;">★</div>
 
-    <div class="sketch-panel" style="position:relative">
-      <span class="panel-tag">// login</span>
-
-      <div class="logo-area">
-        <div class="logo-wordmark">Fairshare<span class="logo-cursor">_</span></div>
-        <div class="logo-sub">project management · sketch edition</div>
-      </div>
+  <div class="main-content">
+    <div class="px-panel">
+      <h1 class="page-title">FAIR<span>SHARE</span></h1>
 
       {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-          <div class="flash flash-{{ category }}">{{ message }}</div>
-        {% endfor %}
+        {% if messages %}
+          <div class="flash-container">
+            {% for category, message in messages %}
+              <div class="flash-msg flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
       {% endwith %}
 
-      <form method="POST" action="{{ url_for('login') }}" id="loginForm">
-        <div class="field">
-          <label class="field-label" for="email">Email address</label>
-          <input type="email" id="email" name="email" class="sketch-input" placeholder="you@example.com" required autocomplete="email"/>
+      <form action="{{ url_for('login') }}" method="POST">
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input type="email" id="email" name="email" class="px-input" placeholder="your@email.com" required>
         </div>
-        <div class="field">
-          <label class="field-label" for="password">Password</label>
-          <input type="password" id="password" name="password" class="sketch-input" placeholder="••••••••" required autocomplete="current-password"/>
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input type="password" id="password" name="password" class="px-input" placeholder="••••••••" required>
         </div>
-        <button type="submit" class="sketch-btn" id="loginBtn">→ Sign in</button>
+        <button type="submit" class="px-btn btn-coral">Sign In</button>
       </form>
 
-      <div class="divider">or</div>
-      <p class="link-row">No account? <a href="{{ url_for('signup') }}">Create one →</a></p>
+      <a href="{{ url_for('signup') }}" class="auth-link">Create Account →</a>
     </div>
-
-    <div class="footnote">fig. 1 — authentication screen</div>
-  </main>
-
-  <script>
-    document.getElementById('loginForm').addEventListener('submit', () => {
-      const b = document.getElementById('loginBtn');
-      b.textContent = '... signing in'; b.disabled = true;
-    });
-  </script>
+  </div>
 </body>
 </html>
