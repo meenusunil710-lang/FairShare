@@ -206,7 +206,7 @@ def login():
     return render_template("login.html")
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["GET", "POST"])
 def logout():
     session.clear()
     return redirect(url_for("login"))
@@ -259,8 +259,11 @@ def home():
 @login_required
 def create():
     if request.method == "POST":
-        name     = request.form["project_name"].strip()
-        deadline = request.form["deadline"]
+        name     = request.form.get("project_name", "").strip()
+        deadline = request.form.get("deadline")
+        if not name:
+            flash("Project name is required.", "error")
+            return render_template("create_project.html", user_name=session.get("user_name"))
         conn = get_db_connection()
         conn.execute(
             "INSERT INTO projects (name, deadline, user_id) VALUES (?, ?, ?)",
@@ -280,6 +283,10 @@ def project_modules(project_id):
 
     conn = get_db_connection()
     project = conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
+    if not project:
+        conn.close()
+        return redirect(url_for("home"))
+
     modules  = conn.execute("""
         SELECT m.*, mem.name as member_name
         FROM modules m
@@ -310,25 +317,35 @@ def project_modules(project_id):
 def add_member(project_id):
     if not owns_project(project_id):
         return redirect(url_for("home"))
-    name = request.form["member_name"].strip()
-    conn = get_db_connection()
-    conn.execute("INSERT INTO members (name, project_id) VALUES (?, ?)", (name, project_id))
-    conn.commit()
-    conn.close()
+    name = request.form.get("member_name", "").strip()
+    if name:
+        conn = get_db_connection()
+        conn.execute("INSERT INTO members (name, project_id) VALUES (?, ?)", (name, project_id))
+        conn.commit()
+        conn.close()
     return redirect(url_for("project_modules", project_id=project_id))
 
 
 @app.route("/project/<int:project_id>/add_module", methods=["POST"])
 @login_required
 def add_module(project_id):
-    member_id = request.form.get("member_id") or None
-    if member_id is not None:
-     member_id = int(member_id)
     if not owns_project(project_id):
         return redirect(url_for("home"))
-    name      = request.form["module_name"].strip()
-    member_id = request.form["assigned_member"]
-    priority  = request.form.get("priority", "Medium")
+
+    name = request.form.get("module_name", "").strip()
+    if not name:
+        flash("Module name is required.", "error")
+        return redirect(url_for("project_modules", project_id=project_id))
+
+    assigned_member = request.form.get("assigned_member") or request.form.get("member_id")
+    member_id = None
+    if assigned_member and str(assigned_member).strip() not in ("0", "", "None"):
+        try:
+            member_id = int(assigned_member)
+        except ValueError:
+            member_id = None
+
+    priority = request.form.get("priority", "Medium")
     conn = get_db_connection()
     conn.execute(
         "INSERT INTO modules (name, project_id, assigned_member_id, priority) VALUES (?, ?, ?, ?)",
@@ -344,11 +361,13 @@ def add_module(project_id):
 def module_members(module_id):
     conn = get_db_connection()
     module = conn.execute("SELECT * FROM modules WHERE id = ?", (module_id,)).fetchone()
-    if not owns_project(module["project_id"]):
+    if not module or not owns_project(module["project_id"]):
         conn.close()
         return redirect(url_for("home"))
-    member      = conn.execute("SELECT * FROM members WHERE id = ?", (module["assigned_member_id"],)).fetchone()
-    updates     = conn.execute(
+    member = None
+    if module["assigned_member_id"]:
+        member = conn.execute("SELECT * FROM members WHERE id = ?", (module["assigned_member_id"],)).fetchone()
+    updates = conn.execute(
         "SELECT * FROM module_updates WHERE module_id = ? ORDER BY update_date DESC", (module_id,)
     ).fetchall()
     all_members = conn.execute(
@@ -370,16 +389,17 @@ def module_members(module_id):
 def add_update(module_id):
     conn = get_db_connection()
     module = conn.execute("SELECT project_id FROM modules WHERE id = ?", (module_id,)).fetchone()
-    if not owns_project(module["project_id"]):
+    if not module or not owns_project(module["project_id"]):
         conn.close()
         return redirect(url_for("home"))
-    date = request.form["update_date"]
-    text = request.form["update_text"].strip()
-    conn.execute(
-        "INSERT INTO module_updates (module_id, update_date, update_text) VALUES (?, ?, ?)",
-        (module_id, date, text)
-    )
-    conn.commit()
+    date = request.form.get("update_date") or datetime.now().strftime("%Y-%m-%d")
+    text = request.form.get("update_text", "").strip()
+    if text:
+        conn.execute(
+            "INSERT INTO module_updates (module_id, update_date, update_text) VALUES (?, ?, ?)",
+            (module_id, date, text)
+        )
+        conn.commit()
     conn.close()
     return redirect(url_for("module_members", module_id=module_id))
 
@@ -389,7 +409,7 @@ def add_update(module_id):
 def complete_module(module_id):
     conn = get_db_connection()
     module = conn.execute("SELECT project_id FROM modules WHERE id = ?", (module_id,)).fetchone()
-    if not owns_project(module["project_id"]):
+    if not module or not owns_project(module["project_id"]):
         conn.close()
         return redirect(url_for("home"))
     conn.execute("UPDATE modules SET completed = 1 WHERE id = ?", (module_id,))
@@ -403,12 +423,24 @@ def complete_module(module_id):
 def edit_module(module_id):
     conn = get_db_connection()
     module = conn.execute("SELECT project_id FROM modules WHERE id = ?", (module_id,)).fetchone()
-    if not owns_project(module["project_id"]):
+    if not module or not owns_project(module["project_id"]):
         conn.close()
         return redirect(url_for("home"))
-    name      = request.form["module_name"].strip()
-    member_id = request.form["assigned_member"]
-    priority  = request.form["priority"]
+    name = (request.form.get("module_name") or request.form.get("name") or "").strip()
+    if not name:
+        conn.close()
+        flash("Module name is required.", "error")
+        return redirect(url_for("module_members", module_id=module_id))
+
+    assigned_member = request.form.get("assigned_member") or request.form.get("member_id")
+    member_id = None
+    if assigned_member and str(assigned_member).strip() not in ("0", "", "None"):
+        try:
+            member_id = int(assigned_member)
+        except ValueError:
+            member_id = None
+
+    priority = request.form.get("priority", "Medium")
     conn.execute(
         "UPDATE modules SET name = ?, assigned_member_id = ?, priority = ? WHERE id = ?",
         (name, member_id, priority, module_id)
@@ -436,7 +468,7 @@ def delete_task(project_id, module_id):
     if not owns_project(project_id):
         return redirect(url_for("home"))
     conn = get_db_connection()
-    conn.execute("DELETE FROM modules WHERE id = ?", (module_id,))
+    conn.execute("DELETE FROM modules WHERE id = ? AND project_id = ?", (module_id, project_id))
     conn.commit()
     conn.close()
     return redirect(url_for("project_modules", project_id=project_id))
@@ -513,4 +545,4 @@ def api_project_progress(project_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
