@@ -5,93 +5,172 @@ from datetime import datetime
 import os
 from functools import wraps
 
+from dotenv import load_dotenv
+load_dotenv()
+
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DB_PATH = os.path.join(BASE_DIR, "fairshare.db")
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+try:
+    import psycopg2
+    import psycopg2.extras
+    HAS_PSYCOPG2 = True
+except ImportError:
+    HAS_PSYCOPG2 = False
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
 
+
 # ----------------------------
-# DATABASE
+# DATABASE ADAPTER
 # ----------------------------
+class PgConnectionWrapper:
+    """Wraps a psycopg2 connection to provide a sqlite3-compatible interface."""
+    def __init__(self, raw_conn):
+        self._conn = raw_conn
+
+    def _convert_query(self, sql):
+        # Convert ? placeholders to %s for PostgreSQL
+        return sql.replace("?", "%s")
+
+    def execute(self, sql, params=None):
+        cur = self._conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        formatted_sql = self._convert_query(sql)
+        if params is not None:
+            cur.execute(formatted_sql, params)
+        else:
+            cur.execute(formatted_sql)
+        return cur
+
+    def cursor(self):
+        return self._conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+    def commit(self):
+        return self._conn.commit()
+
+    def rollback(self):
+        return self._conn.rollback()
+
+    def close(self):
+        return self._conn.close()
+
+
 def get_db_connection():
-    conn = sqlite3.connect(DB_PATH, timeout=30)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute("PRAGMA foreign_keys = ON")  # Always on, not just in delete routes
-    return conn
+    if DATABASE_URL and HAS_PSYCOPG2:
+        conn = psycopg2.connect(DATABASE_URL)
+        return PgConnectionWrapper(conn)
+    else:
+        conn = sqlite3.connect(DB_PATH, timeout=30)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA foreign_keys = ON")
+        return conn
+
 
 def init_db():
-    conn = get_db_connection()
-    c = conn.cursor()
+    if DATABASE_URL and HAS_PSYCOPG2:
+        conn = psycopg2.connect(DATABASE_URL)
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                email TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE TABLE IF NOT EXISTS projects (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                deadline TEXT,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS members (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE
+            );
+            CREATE TABLE IF NOT EXISTS modules (
+                id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+                assigned_member_id INTEGER REFERENCES members(id) ON DELETE SET NULL,
+                completed INTEGER DEFAULT 0,
+                priority TEXT DEFAULT 'Medium'
+            );
+            CREATE TABLE IF NOT EXISTS module_updates (
+                id SERIAL PRIMARY KEY,
+                module_id INTEGER REFERENCES modules(id) ON DELETE CASCADE,
+                update_date TEXT,
+                update_text TEXT
+            );
+        """)
+        conn.commit()
+        conn.close()
+    else:
+        conn = sqlite3.connect(DB_PATH, timeout=30)
+        c = conn.cursor()
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id       INTEGER PRIMARY KEY AUTOINCREMENT,
+                name     TEXT NOT NULL,
+                email    TEXT NOT NULL UNIQUE,
+                password TEXT NOT NULL,
+                created_at TEXT DEFAULT (datetime('now'))
+            )
+        """)
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS projects (
+                id       INTEGER PRIMARY KEY AUTOINCREMENT,
+                name     TEXT NOT NULL,
+                deadline TEXT,
+                user_id  INTEGER,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        """)
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS members (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                name       TEXT NOT NULL,
+                project_id INTEGER,
+                FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+            )
+        """)
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS modules (
+                id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+                name               TEXT NOT NULL,
+                project_id         INTEGER,
+                assigned_member_id INTEGER,
+                completed          INTEGER DEFAULT 0,
+                priority           TEXT DEFAULT 'Medium',
+                FOREIGN KEY (project_id)         REFERENCES projects(id) ON DELETE CASCADE,
+                FOREIGN KEY (assigned_member_id) REFERENCES members(id)
+            )
+        """)
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS module_updates (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                module_id   INTEGER,
+                update_date TEXT,
+                update_text TEXT,
+                FOREIGN KEY (module_id) REFERENCES modules(id) ON DELETE CASCADE
+            )
+        """)
+        migrations = [
+            "ALTER TABLE modules ADD COLUMN priority TEXT DEFAULT 'Medium'",
+            "ALTER TABLE projects ADD COLUMN user_id INTEGER",
+        ]
+        for m in migrations:
+            try:
+                c.execute(m)
+            except sqlite3.OperationalError:
+                pass
+        conn.commit()
+        conn.close()
 
-    # Users table — new
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id       INTEGER PRIMARY KEY AUTOINCREMENT,
-            name     TEXT NOT NULL,
-            email    TEXT NOT NULL UNIQUE,
-            password TEXT NOT NULL,
-            created_at TEXT DEFAULT (datetime('now'))
-        )
-    """)
-
-    # Projects — added user_id (owner)
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS projects (
-            id       INTEGER PRIMARY KEY AUTOINCREMENT,
-            name     TEXT NOT NULL,
-            deadline TEXT,
-            user_id  INTEGER,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        )
-    """)
-
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS members (
-            id         INTEGER PRIMARY KEY AUTOINCREMENT,
-            name       TEXT NOT NULL,
-            project_id INTEGER,
-            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-        )
-    """)
-
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS modules (
-            id                 INTEGER PRIMARY KEY AUTOINCREMENT,
-            name               TEXT NOT NULL,
-            project_id         INTEGER,
-            assigned_member_id INTEGER,
-            completed          INTEGER DEFAULT 0,
-            priority           TEXT DEFAULT 'Medium',
-            FOREIGN KEY (project_id)         REFERENCES projects(id) ON DELETE CASCADE,
-            FOREIGN KEY (assigned_member_id) REFERENCES members(id)
-        )
-    """)
-
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS module_updates (
-            id          INTEGER PRIMARY KEY AUTOINCREMENT,
-            module_id   INTEGER,
-            update_date TEXT,
-            update_text TEXT,
-            FOREIGN KEY (module_id) REFERENCES modules(id) ON DELETE CASCADE
-        )
-    """)
-
-    # Migrations for existing databases
-    migrations = [
-        "ALTER TABLE modules ADD COLUMN priority TEXT DEFAULT 'Medium'",
-        "ALTER TABLE projects ADD COLUMN user_id INTEGER",
-    ]
-    for m in migrations:
-        try:
-            c.execute(m)
-        except sqlite3.OperationalError:
-            pass  # Column already exists
-
-    conn.commit()
-    conn.close()
 
 init_db()
 
