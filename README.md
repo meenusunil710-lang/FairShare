@@ -2,7 +2,7 @@ Here is the updated, accurate project documentation reflecting the current statu
 
 ---
 
-# FairShare 🎯
+# FairShare.
 
 ## Basic Details
 
