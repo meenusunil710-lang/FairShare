@@ -321,6 +321,9 @@ def add_member(project_id):
 @app.route("/project/<int:project_id>/add_module", methods=["POST"])
 @login_required
 def add_module(project_id):
+    member_id = request.form.get("member_id") or None
+    if member_id is not None:
+     member_id = int(member_id)
     if not owns_project(project_id):
         return redirect(url_for("home"))
     name      = request.form["module_name"].strip()
