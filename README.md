@@ -168,7 +168,7 @@ Open `http://localhost:5000` in your web browser.
 
 ## AI Tools Used (For Transparency)
 
-- **Tools Used:** GitHub Copilot, ChatGPT, Gemini, Antigravity AI Assistant.
+- **Tools Used:** GitHub Copilot, ChatGPT, Gemini, Antigravity AI Assistant, Claude.
 - **Purpose:** 
   - Database schema design & PostgreSQL migration scripting.
   - Debugging database foreign key constraints and error handling.
